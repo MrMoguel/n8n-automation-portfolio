@@ -1,0 +1,2075 @@
+{
+  "name": "Dashboard LEADS",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        2144,
+        208
+      ],
+      "id": "a97c8d3e-2afa-4aff-a822-731898a4beb8",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT DISTINCT remote_jid \nFROM chat_logs_raw \nWHERE processed_for_analytics = FALSE;\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        752,
+        -384
+      ],
+      "id": "8f8b6905-8bfb-4450-af9f-3d4a9c01a3c6",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "postgres": {
+          "id": "25vNRG11YucIzspL",
+          "name": "\tPostgreSQL Prisma"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        960,
+        -384
+      ],
+      "id": "e55dda0b-3ba5-4146-91ae-bc528f40ad1b",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n    remote_jid,\n    (\n        SELECT sender_name \n        FROM chat_logs_raw \n        WHERE remote_jid = $1 \n          AND sender_name IS NOT NULL \n        ORDER BY created_at DESC \n        LIMIT 1\n    ) as sender_name,\n    json_agg(\n        json_build_object(\n            'role', role,\n            'message', content,\n            'time', created_at\n        ) ORDER BY created_at ASC\n    ) as conversation_history\nFROM chat_logs_raw \nWHERE remote_jid = $1\nGROUP BY remote_jid;\n",
+        "options": {
+          "queryReplacement": "={{ $json.remote_jid }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1232,
+        -304
+      ],
+      "id": "db9dc5d9-09b1-4a98-89a6-7b69b4d1ac91",
+      "name": "Execute a SQL query1",
+      "credentials": {
+        "postgres": {
+          "id": "25vNRG11YucIzspL",
+          "name": "\tPostgreSQL Prisma"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"lead_profile\": {\n    \"current_status\": \"string\",\n    \"lead_score\": 0,\n    \"temperature\": \"string\",\n    \"buying_intent\": \"string\",\n    \"main_objection\": \"string\",\n    \"intent_confidence\": 0\n  },\n  \"capture_metrics\": {\n    \"capture_goal_achieved\": \"none|email_captured|meeting_scheduled|presentation_sent|followup_confirmed\",\n    \"capture_goal_confidence\": 0,\n    \"contact_channels_obtained\": \"string\",\n    \"meeting_proposed\": false,\n    \"meeting_scheduled\": false,\n    \"presentation_sent\": false,\n    \"followup_confirmed\": false,\n    \"capture_status\": \"Prospect|Lead_Qualified|Meeting_Booked|Lost\"\n  },\n  \"engagement_metrics\": {\n    \"conversation_turn_count\": 0,\n    \"response_time_avg_seconds\": 0.0,\n    \"first_message_latency_seconds\": 0,\n    \"conversation_quality_score\": 0\n  },\n  \"emotional_analysis\": {\n    \"sentiment_score\": 0.0,\n    \"emotional_trajectory\": \"string\"\n  },\n  \"intelligence\": {\n    \"summary_text\": \"string\",\n    \"topics_mentioned\": \"string\",\n    \"suggested_action\": \"string\",\n    \"recommended_next_step\": \"string\",\n    \"human_intervention_needed\": false\n  }\n}\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1984,
+        -96
+      ],
+      "id": "d7bb4efc-685a-4840-9a59-eb53854165b6",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=conversation_history:{{ JSON.stringify($json.conversation_history) }}\nremote_jid:{{ $('Loop Over Items').item.json.remote_jid }}\n\nIMPORTANTE: Analiza el historial anterior y devuelve SOLO el JSON. Nada de explicaciones.",
+        "hasOutputParser": true,
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "=# AGENTE ANÁLISIS: Enfoque de Captación de Clientes\n\nEres un Analista de Captación de Clientes especializado en conversaciones B2B por WhatsApp.\nTu objetivo es analizar historiales de chat y extraer inteligencia sobre el éxito de **captación** (no venta).\n\n## CONTEXTO DE NEGOCIO\n- Servicio: Automatización y Marketing Digital.\n- Valor estándar: $250,000 CLP + IVA.\n- Objetivo Principal: Concretar una reunión y demostrar interés genuino del cliente.\n- Objetivos Secundarios: Captar correo, enviar presentación, confirmar seguimiento.\n\n## ENTRADA\nArray JSON con estructura: [{\"role\": \"user\"|\"ai\", \"message\": \"...\", \"time\": \"ISO timestamp\"}, ...]\n\n## ANÁLISIS REQUERIDO\n\n### 1. ESTATUS DE CAPTACIÓN\nDetermina `capture_goal_achieved` (elige UNO, solo uno):\n- \"none\" - Sin logro identificado\n- \"email_captured\" - Cliente dio su correo\n- \"meeting_scheduled\" - Reunión confirmada con fecha/hora\n- \"presentation_sent\" - Se envió presentación/PDF\n- \"followup_confirmed\" - Seguimiento acordado con fecha\n\n### 2. CONFIANZA EN EL LOGRO\n`capture_goal_confidence` (entero 0-100):\n- 90-100: Evidencia explícita (\"Te envío: juan@empresa.com\")\n- 70-89: Muy probable (\"Llámame mañana 3pm\")\n- 50-69: Probable pero no seguro (\"Sí, me interesa\")\n- 0-49: Incierto o hipotético\n\n### 3. CANALES DE CONTACTO OBTENIDOS\n`contact_channels_obtained` (STRING con valores separados por coma, NUNCA null):\n- Si obtuviste canales: \"email,phone\" o \"whatsapp\" o \"email,linkedin\"\n- Si NO obtuviste nada: \"\" (string vacío)\n- Posibles valores: email, phone, whatsapp, linkedin\n\n### 4. LOGROS ESPECÍFICOS\n- `meeting_proposed`: boolean - ¿Se ofreció/sugirió reunión?\n- `meeting_scheduled`: boolean - ¿Fecha/hora confirmada?\n- `presentation_sent`: boolean - ¿Se envió PDF/demo/link?\n- `followup_confirmed`: boolean - ¿Hay seguimiento agendado?\n\n### 5. ESTADO DE CAPTACIÓN MACRO\n`capture_status` (elige UNO exactamente):\n- \"Prospect\" - Primera interacción, bajo engagement\n- \"Lead_Qualified\" - Interés claro, datos capturados\n- \"Meeting_Booked\" - Reunión agendada\n- \"Lost\" - Rechazó explícitamente o muy bajo engagement\n\n### 6. SCORING ORIENTADO A CAPTACIÓN\n`lead_score` (entero 0-100):\n- 0-20: Spam, rechazo, sin interés\n- 21-40: Interés débil, sin contacto\n- 41-60: Interés medio, datos parciales\n- 61-80: Interés claro, datos o reunión próxima\n- 81-100: Muy interesado, reunión agendada\n\n### 7. RECOMENDACIONES\n`recommended_next_step` (una frase corta):\n- \"Proponer reunión de discovery esta semana\"\n- \"Solicitar correo para enviar presentación\"\n- \"Confirmar disponibilidad para llamada mañana\"\n- \"Pausar, cliente en modo 'información solamente'\"\n- \"Enviar presentación y agendar follow-up\"\n\n### 8. ANÁLISIS PREVIO\n- `current_status`: string breve, ej \"Initial contact - waiting response\"\n- `temperature`: EXACTAMENTE \"Hot\", \"Warm\" o \"Cold\" (con mayúscula inicial)\n- `sentiment_score`: decimal 0-1.0 (ej: 0.7)\n- `emotional_trajectory`: EXACTAMENTE \"Improving\", \"Declining\" o \"Stable\"\n- `summary_text`: 2-3 frases enfocadas en captación\n- `buying_intent`: string, ej \"Interesado en demostración de automatización\"\n- `main_objection`: string, ej \"Presupuesto limitado\" o \"En evaluación\" o \"\" (vacío si no hay)\n- `topics_mentioned`: STRING con temas separados por coma. Ej: \"automatización,precio,demo\" o \"\" (vacío si no hay)\n- `suggested_action`: string breve, ej \"Esperar respuesta\"\n- `human_intervention_needed`: boolean true o false\n\n---\n\n## ⚠️ REGLAS DE SEGURIDAD PARA GPT-4o-mini (CRÍTICAS)\n\n1. **`contact_channels_obtained` es STRING, no array.** Si vacío, devuelve \"\" (string vacío)\n2. **`topics_mentioned` es STRING, no array.** Si vacío, devuelve \"\" (string vacío)\n3. **NUNCA devuelvas null en strings.** Devuelve \"\" (string vacío) si no hay valor\n4. **NUNCA omitas campos definidos en el esquema.** Todos los campos deben aparecer.\n5. **temperature SIEMPRE capitalizado:** \"Hot\", \"Warm\", \"Cold\" (no \"hot\", \"HOT\", etc)\n6. **emotional_trajectory SIEMPRE exacto:** \"Improving\", \"Declining\" o \"Stable\"\n7. **Booleanos SIEMPRE minúsculas:** true/false (no True/False)\n8. **capture_status SOLO estos valores:** \"Prospect\" | \"Lead_Qualified\" | \"Meeting_Booked\" | \"Lost\"\n9. **capture_goal_achieved SOLO estos:** \"none\" | \"email_captured\" | \"meeting_scheduled\" | \"presentation_sent\" | \"followup_confirmed\"\n10. **Strings separados por coma SIN espacios después:** \"email,phone\" no \"email, phone\"\n\n---\n\n## FORMATO DE SALIDA (JSON ESTRICTO)\n\nDevuelve SOLO el JSON. Sin markdown, sin \"```\n\n{\n  \"lead_profile\": {\n    \"current_status\": \"string\",\n    \"lead_score\": 0,\n    \"temperature\": \"Hot|Warm|Cold\",\n    \"buying_intent\": \"string\",\n    \"main_objection\": \"string\",\n    \"intent_confidence\": 0\n  },\n  \"capture_metrics\": {\n    \"capture_goal_achieved\": \"none|email_captured|meeting_scheduled|presentation_sent|followup_confirmed\",\n    \"capture_goal_confidence\": 0,\n    \"contact_channels_obtained\": \"email,phone\",\n    \"meeting_proposed\": false,\n    \"meeting_scheduled\": false,\n    \"presentation_sent\": false,\n    \"followup_confirmed\": false,\n    \"capture_status\": \"Prospect|Lead_Qualified|Meeting_Booked|Lost\"\n  },\n  \"engagement_metrics\": {\n    \"conversation_turn_count\": 0,\n    \"response_time_avg_seconds\": 0.0,\n    \"first_message_latency_seconds\": 0,\n    \"conversation_quality_score\": 0\n  },\n  \"emotional_analysis\": {\n    \"sentiment_score\": 0.0,\n    \"emotional_trajectory\": \"Improving|Declining|Stable\"\n  },\n  \"intelligence\": {\n    \"summary_text\": \"string\",\n    \"topics_mentioned\": \"automatización,precio,demo\",\n    \"suggested_action\": \"string\",\n    \"recommended_next_step\": \"string\",\n    \"human_intervention_needed\": false\n  }\n}\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        1744,
+        -304
+      ],
+      "id": "3814ae49-3085-4c5f-bd6d-ddfbc953c06f",
+      "name": "Analysis"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM leads_analytics_summary;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        736,
+        208
+      ],
+      "id": "ebd20ee4-e153-4cfa-8048-1ffb007bfe21",
+      "name": "Execute a SQL query2",
+      "credentials": {
+        "postgres": {
+          "id": "25vNRG11YucIzspL",
+          "name": "\tPostgreSQL Prisma"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n    remote_jid,\n    (SELECT sender_name FROM chat_logs_raw WHERE remote_jid = $1 AND sender_name IS NOT NULL ORDER BY created_at DESC LIMIT 1) as sender_name,\n    MIN(created_at) as first_msg_at,\n    MAX(created_at) as last_msg_at,\n    json_agg(\n        json_build_object(\n            'role', role,\n            'message', content,\n            'time', created_at\n        ) ORDER BY created_at ASC\n    ) as conversation_history\nFROM chat_logs_raw \nWHERE remote_jid = $1\nGROUP BY remote_jid;\n",
+        "options": {
+          "queryReplacement": "={{ $json.remote_jid }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1488,
+        -304
+      ],
+      "id": "36597f40-b31d-4aa0-8bde-632cfe4aacf0",
+      "name": "Execute a SQL query3",
+      "credentials": {
+        "postgres": {
+          "id": "25vNRG11YucIzspL",
+          "name": "\tPostgreSQL Prisma"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "leads_analytics_summary",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "human_intervention_needed": "={{ $json.output.intelligence.human_intervention_needed }}",
+            "analysis_status": "Analyzed",
+            "remote_jid": "={{ $('Execute a SQL query3').item.json.remote_jid }}",
+            "last_known_name": "={{ $('Execute a SQL query1').item.json.sender_name }}",
+            "current_status": "={{ $json.output.lead_profile.current_status }}",
+            "lead_score": "={{ $json.output.lead_profile.lead_score }}",
+            "temperature": "={{ $json.output.lead_profile.temperature }}",
+            "summary_text": "={{ $json.output.intelligence.summary_text }}",
+            "buying_intent": "={{ $json.output.lead_profile.buying_intent }}",
+            "main_objection": "={{ $json.output.lead_profile.main_objection === 'null' ? null : $json.output.lead_profile.main_objection }}",
+            "suggested_action": "={{ $json.output.intelligence.suggested_action }}",
+            "conversation_turn_count": "={{ $json.output.engagement_metrics.conversation_turn_count }}",
+            "response_time_avg_seconds": "={{ $json.output.engagement_metrics.response_time_avg_seconds }}",
+            "first_message_latency_seconds": "={{ $json.output.engagement_metrics.first_message_latency_seconds }}",
+            "conversation_quality_score": "={{ $json.output.engagement_metrics.conversation_quality_score }}",
+            "sentiment_score": "={{ $json.output.emotional_analysis.sentiment_score }}",
+            "emotional_trajectory": "={{ $json.output.emotional_analysis.emotional_trajectory }}",
+            "intent_confidence": "={{ $json.output.lead_profile.intent_confidence }}",
+            "estimated_deal_value": "={{ $json.output.lead_profile.estimated_deal_value }}",
+            "churn_risk": "={{ $json.output.lead_profile.churn_risk }}",
+            "recommended_next_step": "={{ $json.output.intelligence.recommended_next_step }}",
+            "first_interaction_at": "={{ $('Execute a SQL query3').item.json.first_msg_at }}",
+            "last_interaction_at": "={{ $('Execute a SQL query3').item.json.last_msg_at }}",
+            "last_analyzed_at": "={{ new Date().toISOString() }}",
+            "capture_goal_confidence": "={{ $json.output.capture_metrics.capture_goal_confidence }}",
+            "estimated_contract_value": "={{ 250000.00 }}",
+            "capture_goal_achieved": "={{ $json.output.capture_metrics.capture_goal_achieved }}",
+            "meeting_proposed": "={{ $json.output.capture_metrics.meeting_proposed }}",
+            "meeting_scheduled": "={{ $json.output.capture_metrics.meeting_scheduled }}",
+            "presentation_sent": "={{ $json.output.capture_metrics.presentation_sent }}",
+            "followup_confirmed": "={{ $json.output.capture_metrics.followup_confirmed }}",
+            "capture_status": "={{ $json.output.capture_metrics.capture_status }}",
+            "action_executed": false,
+            "email_provided": "={{ $json.output.capture_metrics.email_provided }}"
+          },
+          "matchingColumns": [
+            "remote_jid"
+          ],
+          "schema": [
+            {
+              "id": "remote_jid",
+              "displayName": "remote_jid",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "last_known_name",
+              "displayName": "last_known_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "current_status",
+              "displayName": "current_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "lead_score",
+              "displayName": "lead_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "temperature",
+              "displayName": "temperature",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "summary_text",
+              "displayName": "summary_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "buying_intent",
+              "displayName": "buying_intent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "main_objection",
+              "displayName": "main_objection",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "suggested_action",
+              "displayName": "suggested_action",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "human_intervention_needed",
+              "displayName": "human_intervention_needed",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "conversation_turn_count",
+              "displayName": "conversation_turn_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "response_time_avg_seconds",
+              "displayName": "response_time_avg_seconds",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "first_message_latency_seconds",
+              "displayName": "first_message_latency_seconds",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "conversation_quality_score",
+              "displayName": "conversation_quality_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "sentiment_score",
+              "displayName": "sentiment_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "emotional_trajectory",
+              "displayName": "emotional_trajectory",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "topics_mentioned",
+              "displayName": "topics_mentioned",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": false,
+              "removed": true
+            },
+            {
+              "id": "intent_confidence",
+              "displayName": "intent_confidence",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "estimated_deal_value",
+              "displayName": "estimated_deal_value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "churn_risk",
+              "displayName": "churn_risk",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "recommended_next_step",
+              "displayName": "recommended_next_step",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "first_interaction_at",
+              "displayName": "first_interaction_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "last_interaction_at",
+              "displayName": "last_interaction_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "last_analyzed_at",
+              "displayName": "last_analyzed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "analysis_status",
+              "displayName": "analysis_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "capture_goal_achieved",
+              "displayName": "capture_goal_achieved",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": false
+            },
+            {
+              "id": "capture_goal_confidence",
+              "displayName": "capture_goal_confidence",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": false,
+              "removed": false
+            },
+            {
+              "id": "contact_channels_obtained",
+              "displayName": "contact_channels_obtained",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": false,
+              "removed": true
+            },
+            {
+              "id": "email_provided",
+              "displayName": "email_provided",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": false
+            },
+            {
+              "id": "meeting_proposed",
+              "displayName": "meeting_proposed",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": false,
+              "removed": false
+            },
+            {
+              "id": "meeting_scheduled",
+              "displayName": "meeting_scheduled",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": false,
+              "removed": false
+            },
+            {
+              "id": "presentation_sent",
+              "displayName": "presentation_sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": false,
+              "removed": false
+            },
+            {
+              "id": "followup_confirmed",
+              "displayName": "followup_confirmed",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": false,
+              "removed": false
+            },
+            {
+              "id": "capture_status",
+              "displayName": "capture_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": false
+            },
+            {
+              "id": "estimated_contract_value",
+              "displayName": "estimated_contract_value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": false,
+              "removed": false
+            },
+            {
+              "id": "custom_notes",
+              "displayName": "custom_notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": false
+            },
+            {
+              "id": "action_executed",
+              "displayName": "action_executed",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": false,
+              "removed": false
+            },
+            {
+              "id": "action_executed_at",
+              "displayName": "action_executed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": false,
+              "removed": false
+            },
+            {
+              "id": "action_feedback",
+              "displayName": "action_feedback",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2128,
+        -304
+      ],
+      "id": "397e8c83-aab0-4091-850a-d2d185457951",
+      "name": "Insert or update rows in a table",
+      "credentials": {
+        "postgres": {
+          "id": "25vNRG11YucIzspL",
+          "name": "\tPostgreSQL Prisma"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO leads_analytics_summary (remote_jid, topics_mentioned)\nVALUES (\n  $1, \n  $2::jsonb  -- <--- El secreto: Casteo explícito\n)\nON CONFLICT (remote_jid) \nDO UPDATE SET \n  topics_mentioned = EXCLUDED.topics_mentioned;\n",
+        "options": {
+          "queryReplacement": "={{ $('Execute a SQL query3').item.json.remote_jid }},{{ JSON.stringify($('Analysis').item.json.output.intelligence.topics_mentioned) }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2336,
+        -304
+      ],
+      "id": "6f6634ef-f55e-49b6-b1fc-e6660e54d979",
+      "name": "Execute a SQL query4",
+      "credentials": {
+        "postgres": {
+          "id": "25vNRG11YucIzspL",
+          "name": "\tPostgreSQL Prisma"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "path": "dashboard",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        528,
+        208
+      ],
+      "id": "51bc4ef2-25cd-4c8a-b934-b4446471312d",
+      "name": "Webhook",
+      "webhookId": "abfed7f8-11a5-475b-84f4-52ca7af39ef3"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $input.all().map(item => item.json) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        928,
+        208
+      ],
+      "id": "c1053866-5da9-4410-9041-c90d159aee8b",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- 1. Primero eliminamos el registro que \"estorba\" (el que tiene el ID correcto pero datos viejos/vacíos)\nDELETE FROM leads_analytics_summary\nWHERE remote_jid = '56968030171@s.whatsapp.net';\n\n-- 2. Ahora sí podemos renombrar el registro @lid al ID correcto sin que dé error de duplicado\nUPDATE leads_analytics_summary\nSET remote_jid = '56968030171@s.whatsapp.net'\nWHERE remote_jid = '143757118828731@lid';\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2352,
+        208
+      ],
+      "id": "7eec27d1-d48b-40bd-a2ab-d194d9ba6816",
+      "name": "Execute a SQL query5",
+      "credentials": {
+        "postgres": {
+          "id": "25vNRG11YucIzspL",
+          "name": "\tPostgreSQL Prisma"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 30
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        528,
+        -384
+      ],
+      "id": "2b8acbc3-d04b-4dfd-ba52-e4db039bc95a",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "action",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        544,
+        -1024
+      ],
+      "id": "02ea6861-a5f8-4ce4-b43a-53b7499de580",
+      "name": "Webhook1",
+      "webhookId": "abfed7f8-11a5-475b-84f4-52ca7af39ef3"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "chat_logs_raw",
+          "mode": "list",
+          "cachedResultName": "chat_logs_raw"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "processed_for_analytics": true,
+            "remote_jid": "={{ $('Execute a SQL query1').item.json.remote_jid }}"
+          },
+          "matchingColumns": [
+            "remote_jid"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "remote_jid",
+              "displayName": "remote_jid",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "role",
+              "displayName": "role",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "content",
+              "displayName": "content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message_id",
+              "displayName": "message_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sender_name",
+              "displayName": "sender_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "raw_data",
+              "displayName": "raw_data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "processed_for_analytics",
+              "displayName": "processed_for_analytics",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2544,
+        -304
+      ],
+      "id": "dc056dd4-d7fd-4e8d-86f9-89472673fae7",
+      "name": "Update rows in a table",
+      "credentials": {
+        "postgres": {
+          "id": "25vNRG11YucIzspL",
+          "name": "\tPostgreSQL Prisma"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        1232,
+        176
+      ],
+      "id": "eb1f4682-8a99-4d15-a624-3da82e35b842",
+      "name": "Error Trigger"
+    },
+    {
+      "parameters": {
+        "chatId": "1828117088",
+        "text": "={{ $('Error Trigger').item.json.execution.error.node.parameters.options.systemMessage }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1712,
+        176
+      ],
+      "id": "c1a0a841-404a-4265-8195-ea99080c7cf5",
+      "name": "Send a text message1",
+      "webhookId": "940b71a2-2b21-4d03-b601-681fe40e5464",
+      "credentials": {
+        "telegramApi": {
+          "id": "xjzcyIZlePUjaH7v",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# error",
+        "height": 368,
+        "width": 736,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1184,
+        112
+      ],
+      "id": "d8169281-f7db-479c-a316-f9d7dbfb0e49",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        880,
+        -736
+      ],
+      "id": "8a1c20ea-bb34-4b90-acb2-1287f6e326e0",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "qRqeWgwWSInHs854",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "instanceName": "=Milo",
+        "remoteJid": "={{ $('Edit Fields4').item.json.remote_jid }}",
+        "messageText": "={{ $json.text }}",
+        "options_message": {}
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        2288,
+        -976
+      ],
+      "id": "716c37f9-fa5d-4db4-a6c2-4baf6e805628",
+      "name": "Enviar texto",
+      "credentials": {
+        "evolutionApi": {
+          "id": "5yntQqZ5QVqETeHU",
+          "name": "Evolution account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "integrations-api",
+        "operation": "evolution-bot",
+        "instanceName": "Milo",
+        "resourceForEvolutionBot": "changeStatusEvolutionBot",
+        "evolutionBotId": "={{ $json.data.key.id }}",
+        "remoteJid": "={{ $json.data.key.remoteJid }}",
+        "status": "closed"
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        2464,
+        -976
+      ],
+      "id": "a8797995-dd86-42fe-91b0-e99462bcac2f",
+      "name": "Evolution bot",
+      "credentials": {
+        "evolutionApi": {
+          "id": "5yntQqZ5QVqETeHU",
+          "name": "Evolution account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "05a476b3-44cb-4000-b732-54dd043b1234",
+              "name": "remote_jid",
+              "value": "={{ $json.body.remote_jid }}",
+              "type": "string"
+            },
+            {
+              "id": "67f50c72-576e-4c19-9446-7291d2a7c7a2",
+              "name": "body.custom_notes",
+              "value": "={{ $json.body.custom_notes }}",
+              "type": "string"
+            },
+            {
+              "id": "d3c79bdd-2d2e-4cda-84c2-0154eeec2328",
+              "name": "body.action_feedback",
+              "value": "={{ $json.body.action_feedback }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        752,
+        -1024
+      ],
+      "id": "34dd8b6d-a669-4746-a093-3ccea64ec316",
+      "name": "Edit Fields4"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.remote_jid }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        1056,
+        -736
+      ],
+      "id": "c78938d9-f95d-4264-8b25-cd1596d7db88",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "25vNRG11YucIzspL",
+          "name": "\tPostgreSQL Prisma"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        2080,
+        -1024
+      ],
+      "id": "f8342e7b-7496-406e-911b-3bde25181cfc",
+      "name": "Loop Over Items1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const parts = $input.first().json.output.parts;\n\nreturn parts.map((part, index) => ({\n  json: {\n    text: part,\n    index: index,\n    total: parts.length\n  }\n}));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1904,
+        -1024
+      ],
+      "id": "42291dae-ba7b-4043-a95f-4189c01b4fe3",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "amount": 15
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2144,
+        -848
+      ],
+      "id": "84abdf26-8a7a-45ed-b13d-3865d8c31a67",
+      "name": "Wait1",
+      "webhookId": "7d03dd95-ca6f-4560-9f67-3c5260a56ab9"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1568,
+        -832
+      ],
+      "id": "fb31bf31-a24e-4a3d-be25-3e91a4bede6e",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "qRqeWgwWSInHs854",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "id",
+          "value": "claude-sonnet-4-20250514"
+        },
+        "options": {
+          "maxTokensToSample": 150,
+          "temperature": 0.8
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        720,
+        -736
+      ],
+      "id": "2f1f4e66-b085-4fca-a1cf-3db42c5c4fc2",
+      "name": "Anthropic Chat Model",
+      "credentials": {
+        "anthropicApi": {
+          "id": "0Dptar29boDNBfDZ",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "N2xXuZSwuP49ZacP",
+          "mode": "list",
+          "cachedResultName": "LEADS TLF",
+          "cachedResultUrl": "/projects/QT5CakdiahQKVTqC/datatables/N2xXuZSwuP49ZacP"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "phone",
+              "keyValue": "={{ $json.remote_jid.replace('@s.whatsapp.net', '') }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTableTool",
+      "typeVersion": 1,
+      "position": [
+        1216,
+        -736
+      ],
+      "id": "465c1d93-0a0e-485c-8b53-29b4f1cc755c",
+      "name": "Get row(s) in Data table"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=custom_notes: {{ $json.body.custom_notes }}\naction_feedback: {{ $json.body.action_feedback }}",
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "="
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1040,
+        -1024
+      ],
+      "id": "35fc0bfa-b430-4296-b78e-4017f1230b05",
+      "name": "CENTRAL"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analiza el siguiente mensaje y decide si necesita dividirse en partes o puede enviarse completo:\n\nTEXTO:\n{{ $json.output }}\n\nINSTRUCCIONES:\n1. Evalúa la longitud y cantidad de ideas del texto\n2. Identifica puntos de corte naturales si aplica\n3. Divide SOLO si hay múltiples ideas distintas\n4. Mantén cada parte como unidad de sentido completa\n\nEJEMPLOS DE REFERENCIA:\n\nCaso 1 - NO dividir (mensaje corto):\nEntrada: \"Hola, buenas tardes\"\nSalida: [\"Hola, buenas tardes\"]\n\nCaso 2 - NO dividir (una sola idea):\nEntrada: \"Muchas gracias por tu tiempo y disposición\"\nSalida: [\"Muchas gracias por tu tiempo y disposición\"]\n\nCaso 3 - SÍ dividir (múltiples ideas):\nEntrada: \"Ningún problema, gracias por responder. Si en algún momento quieren mejorar la presencia digital de Floristeria Miguelon, pueden escribirme por acá o al correo contacto@edea.cl. Que tengan buena tarde!\"\nSalida: [\n  \"Ningún problema, gracias por responder.\",\n  \"Si en algún momento quieren mejorar la presencia digital de Floristeria Miguelon, pueden escribirme por acá o al correo contacto@edea.cl.\",\n  \"Que tengan buena tarde!\"\n]\n\nAHORA PROCESA EL TEXTO Y DEVUELVE SOLO EL JSON:\n",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=Eres un experto en segmentación inteligente de mensajes para WhatsApp Business. Tu especialidad es analizar textos y decidir estratégicamente si deben dividirse en múltiples mensajes o enviarse completos, simulando el comportamiento de conversación natural humana.\n\nTU FUNCIÓN:\n- Analizar la longitud, estructura y contenido semántico de mensajes\n- Identificar unidades de significado independientes\n- Decidir inteligentemente cuándo dividir y cuándo mantener un mensaje completo\n- Priorizar la naturalidad y coherencia conversacional\n\nREGLAS DE DECISIÓN:\n1. Mensajes CORTOS (≤20 palabras) o con UNA SOLA IDEA → NO dividir\n2. Mensajes LARGOS con MÚLTIPLES IDEAS DISTINTAS → Dividir en partes naturales\n\nCRITERIOS PARA DIVIDIR:\n✓ Múltiples temas o propósitos distintos\n✓ Estructura: saludo + contenido + despedida\n✓ Información de contacto con propuesta extensa\n✓ Cambios claros de contexto\n\nCRITERIOS PARA NO DIVIDIR:\n✗ Saludos simples o respuestas breves\n✗ Mensajes de cortesía aislados\n✗ Confirmaciones cortas\n✗ Una sola idea coherente\n\nPUNTOS DE CORTE NATURALES:\n- Después de puntos finales\n- Entre oraciones con propósitos diferentes\n- Antes/después de datos de contacto\n- Entre saludo/contenido/despedida\n\nFORMATO DE SALIDA OBLIGATORIO:\nDevuelve ÚNICAMENTE un array JSON válido sin texto adicional, markdown ni explicaciones.\nEjemplo: [\"parte 1\", \"parte 2\", \"parte 3\"]\nSi NO debe dividirse: [\"mensaje completo\"]\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1584,
+        -1024
+      ],
+      "id": "113ac3cf-2b45-4fcb-af57-d73bd6cc5450",
+      "name": "DIVISOR"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "chat_logs_raw",
+          "mode": "list",
+          "cachedResultName": "chat_logs_raw"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "processed_for_analytics": false,
+            "remote_jid": "={{ $json.data.bot.bot.remoteJid }}",
+            "role": "ai",
+            "content": "={{ $('Enviar texto').item.json.data.message.conversation }}",
+            "message_id": "={{ $('Enviar texto').item.json.data.key.id }}",
+            "raw_data": "={{ $('Enviar texto').item.json.data.message }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "remote_jid",
+              "displayName": "remote_jid",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "role",
+              "displayName": "role",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "content",
+              "displayName": "content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message_id",
+              "displayName": "message_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sender_name",
+              "displayName": "sender_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "raw_data",
+              "displayName": "raw_data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "processed_for_analytics",
+              "displayName": "processed_for_analytics",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2416,
+        -784
+      ],
+      "id": "4275c7b8-0865-4ad7-8042-751462465ea6",
+      "name": "Insert rows in a table1",
+      "credentials": {
+        "postgres": {
+          "id": "25vNRG11YucIzspL",
+          "name": "\tPostgreSQL Prisma"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"parts\": [\n    \"Primera parte del mensaje\",\n    \"Segunda parte del mensaje\",\n    \"Tercera parte del mensaje\"\n  ]\n}\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1808,
+        -832
+      ],
+      "id": "f40827db-f488-42bd-99ce-c34013dd3451",
+      "name": "Structured Output Parser1"
+    },
+    {
+      "parameters": {
+        "content": "# EJECUTAR ACCION",
+        "height": 560,
+        "width": 2256,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        464,
+        -1120
+      ],
+      "id": "3950279c-8799-4ae1-99ae-3cac05329e0e",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "# REFRESH DATA",
+        "height": 560,
+        "width": 2256,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        464,
+        -496
+      ],
+      "id": "cfcdb0b4-1214-4abb-9a7a-d02a60a7b0a6",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "# WEBHOOK ANALYSIS",
+        "height": 256,
+        "width": 672,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        464,
+        112
+      ],
+      "id": "d4ad041b-fcc4-40b2-ba99-48ea3c578c26",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Mensaje de error: {{ $json.execution.error.node.parameters.options.systemMessage }}\n\nStack: {{ $json.execution.error.stack }}\n\nUltimo nodo ejecutado: {{ $json.execution.lastNodeExecuted }}",
+        "options": {
+          "systemMessage": "Eres un asistente técnico que resume errores de n8n de forma MUY breve.\n\nEntrada:\n- error.message\n- error.stack\n- último nodo ejecutado\n\nObjetivo:\n- Explicar en pocas palabras qué pasó y qué revisar.\n\nREGLAS ESTRICTAS DE SALIDA:\n- Máximo 3 líneas.\n- Máximo 40 palabras en total.\n- No repitas el stack ni pegues texto literal del error.\n- No expliques conceptos genéricos (qué es un 404, qué es una API, etc.).\n- No hagas introducciones ni conclusiones.\n\nFormato EXACTO de respuesta (en texto plano, sin viñetas):\n\nCausa probable: …\nNodo a revisar: …\nAcción rápida: …"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        1408,
+        176
+      ],
+      "id": "7e141f18-3c0f-4c40-a820-8d2e01005db9",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1408,
+        368
+      ],
+      "id": "363b16b1-dd62-4c4c-b67c-f824e6bbec15",
+      "name": "OpenAI Chat Model2",
+      "credentials": {
+        "openAiApi": {
+          "id": "qRqeWgwWSInHs854",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        2832,
+        -192
+      ],
+      "id": "f56a9588-8df2-40a3-b2c6-e2e35085aa43",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "TaGKQ1vP2y6HITkO",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1632,
+        -96
+      ],
+      "id": "e7987b3f-4500-49ad-9214-5c9a746789dc",
+      "name": "OpenAI Chat Model3",
+      "credentials": {
+        "openAiApi": {
+          "id": "qRqeWgwWSInHs854",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "nousresearch/hermes-3-llama-3.1-405b:free",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        1824,
+        -96
+      ],
+      "id": "af5f68ab-43d6-471a-bcf0-317ea4d4ee22",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "QETT8kUiuXjnLbpZ",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM chat_logs_raw WHERE remote_jid = $1;\n",
+        "options": {
+          "queryReplacement": "={{ $json.body.remote_jid }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        736,
+        512
+      ],
+      "id": "77d4cb0c-d11b-434f-acd4-43da06b0345c",
+      "name": "Execute a SQL query6",
+      "credentials": {
+        "postgres": {
+          "id": "25vNRG11YucIzspL",
+          "name": "\tPostgreSQL Prisma"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "dashboard-chat",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        528,
+        512
+      ],
+      "id": "534eb05a-8118-4d28-8d24-a1afc8a15f52",
+      "name": "Webhook2",
+      "webhookId": "abfed7f8-11a5-475b-84f4-52ca7af39ef3"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $input.all().map(item => item.json) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        928,
+        512
+      ],
+      "id": "c34446ed-d54a-4d60-98eb-f4ff6805ab80",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "content": "# WEBHOOK CHAT",
+        "height": 256,
+        "width": 672,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        464,
+        416
+      ],
+      "id": "11cd9668-5e96-4a09-8e72-e09f6fea0ecf",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT remote_jid \nFROM chat_logs_raw \nWHERE remote_jid = $1;\n",
+        "options": {
+          "queryReplacement": "={{ $json.remote_jid }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        1392,
+        -736
+      ],
+      "id": "ce600a7a-f229-4bb6-b038-01e32ecc2a67",
+      "name": "Historial Chat",
+      "credentials": {
+        "postgres": {
+          "id": "25vNRG11YucIzspL",
+          "name": "\tPostgreSQL Prisma"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Webhook2": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n.losprismas.com",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
+            "content-length": "43",
+            "accept": "*/*",
+            "accept-encoding": "gzip, br",
+            "accept-language": "es-419,es;q=0.9",
+            "cdn-loop": "cloudflare; loops=1",
+            "cf-connecting-ip": "200.91.27.245",
+            "cf-ipcountry": "CL",
+            "cf-ray": "9a8db029bea889d1-GRU",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-warp-tag-id": "ce111a09-bfd1-42c0-9829-b7901c76a8c3",
+            "connection": "keep-alive",
+            "content-type": "application/json",
+            "origin": "https://leads-analysis-75d9d.web.app",
+            "priority": "u=1, i",
+            "referer": "https://leads-analysis-75d9d.web.app/",
+            "sec-ch-ua": "\"Chromium\";v=\"142\", \"Google Chrome\";v=\"142\", \"Not_A Brand\";v=\"99\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"Windows\"",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "cross-site",
+            "x-forwarded-for": "200.91.27.245",
+            "x-forwarded-proto": "https"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "remote_jid": "56961770400@s.whatsapp.net"
+          },
+          "webhookUrl": "https://n8n.losprismas.com:5678/webhook/dashboard-chat",
+          "executionMode": "production"
+        }
+      }
+    ],
+    "Webhook1": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n.losprismas.com",
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
+            "content-length": "212",
+            "accept": "*/*",
+            "accept-encoding": "gzip, br",
+            "accept-language": "es-ES,es;q=0.9",
+            "cdn-loop": "cloudflare; loops=1",
+            "cf-connecting-ip": "201.246.194.42",
+            "cf-ipcountry": "CL",
+            "cf-ray": "9a8e850f1cca1f0d-EZE",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-warp-tag-id": "3f5fdad5-3879-40af-804a-5c0fc6aa8bc5",
+            "connection": "keep-alive",
+            "content-type": "application/json",
+            "origin": "https://leads-analysis-75d9d.web.app",
+            "priority": "u=1, i",
+            "referer": "https://leads-analysis-75d9d.web.app/",
+            "sec-ch-ua": "\"Chromium\";v=\"142\", \"Google Chrome\";v=\"142\", \"Not_A Brand\";v=\"99\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"macOS\"",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "cross-site",
+            "x-forwarded-for": "201.246.194.42",
+            "x-forwarded-proto": "https"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "remote_jid": "56987161423@s.whatsapp.net",
+            "custom_notes": "Esperar respuesta",
+            "action_executed": "false",
+            "action_feedback": "indicale que somos una empresa de automatización y que podemos ayudarlo con su negocio"
+          },
+          "webhookUrl": "https://n8n.losprismas.com:5678/webhook/action",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Execute a SQL query1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query1": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Analysis",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analysis": {
+      "main": [
+        [
+          {
+            "node": "Insert or update rows in a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query3": {
+      "main": [
+        [
+          {
+            "node": "Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert or update rows in a table": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query4": {
+      "main": [
+        [
+          {
+            "node": "Update rows in a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query2": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update rows in a table": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "CENTRAL",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Enviar texto": {
+      "main": [
+        [
+          {
+            "node": "Evolution bot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evolution bot": {
+      "main": [
+        [
+          {
+            "node": "Insert rows in a table1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields4": {
+      "main": [
+        [
+          {
+            "node": "CENTRAL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "CENTRAL",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Enviar texto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "DIVISOR",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "CENTRAL",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in Data table": {
+      "ai_tool": [
+        [
+          {
+            "node": "CENTRAL",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CENTRAL": {
+      "main": [
+        [
+          {
+            "node": "DIVISOR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DIVISOR": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert rows in a table1": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "DIVISOR",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        []
+      ]
+    },
+    "OpenAI Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Analysis",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Analysis",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query6": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook2": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Historial Chat": {
+      "ai_tool": [
+        [
+          {
+            "node": "CENTRAL",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Santiago",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "2b0742fb-867f-467a-a90f-88877177ad02",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c0c550501b7896ab0eff6edacfb19ee553f2da638e369fa0272020aa7d2ebf5a"
+  },
+  "id": "MFajCoPgGt7wv5Uc",
+  "tags": []
+}
