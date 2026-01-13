@@ -1,0 +1,76 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -112,
+        0
+      ],
+      "id": "e19118b9-8411-47f3-9be2-3de3d4de9e00",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "command": "={{ $json.query }}"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        144,
+        0
+      ],
+      "id": "41bff6eb-cd55-44e6-b1d3-91a315c85a61",
+      "name": "Execute Command"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Obtener la salida del comando\nconst stdout = items[0].json.stdout || \"\";\nconst stderr = items[0].json.stderr || \"\";\n\n// Función para truncar\nfunction truncate(str, maxLength) {\n  if (str.length > maxLength) {\n    return str.substring(0, maxLength) + \"\\n... [TRUNCATED OUTPUT TOO LONG] ...\";\n  }\n  return str;\n}\n\n// Limitamos a 2000 caracteres (aprox 500 tokens)\nreturn {\n  json: {\n    result: truncate(stdout + stderr, 2000)\n  }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        0
+      ],
+      "id": "e8706d34-c31d-424d-bc3e-c84b0101eb72",
+      "name": "Code in JavaScript"
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Execute Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "c0c550501b7896ab0eff6edacfb19ee553f2da638e369fa0272020aa7d2ebf5a"
+  }
+}
