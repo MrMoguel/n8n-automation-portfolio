@@ -1,0 +1,1909 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "filters": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.n8n",
+      "typeVersion": 1,
+      "position": [
+        464,
+        0
+      ],
+      "id": "1939fcfe-5a7c-4e0a-8e34-09d7d2b47d21",
+      "name": "Get many workflows",
+      "credentials": {
+        "n8nApi": {
+          "id": "KzlXYQKDhQQ1go78",
+          "name": "n8n account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const today = new Date();\nconst folderName = `n8n_backup_weekly_${today.toISOString().split('T')[0]}`;\nreturn { folderName };\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        80,
+        0
+      ],
+      "id": "24ae0b19-8471-4d70-9b76-580913b94cb4",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        672,
+        0
+      ],
+      "id": "40ed7840-1831-4643-ae00-074a2aac9956",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "operation": "toJson",
+        "binaryPropertyName": "=Data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        880,
+        16
+      ],
+      "id": "9e3e06cf-6662-422a-864c-af89e02416ae",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1216,
+        16
+      ],
+      "id": "37a88661-fb9f-4357-89d5-bd88dc060571",
+      "name": "Wait",
+      "webhookId": "5d3ae8d2-a826-4a07-83e2-2a476a27a81d"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "folder",
+        "path": "=/BACKUPS/BACKUP WEEKLY N8N/{{ $json.folderName }}/workflow"
+      },
+      "type": "n8n-nodes-base.dropbox",
+      "typeVersion": 1,
+      "position": [
+        272,
+        0
+      ],
+      "id": "390f2ee8-c6a0-4d38-839b-696889c71ff6",
+      "name": "Create a folder",
+      "credentials": {
+        "dropboxOAuth2Api": {
+          "id": "uegBvrglCqIUgTv5",
+          "name": "Dropbox account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "path": "=/BACKUPS/BACKUP WEEKLY N8N/{{ $('Code in JavaScript').item.json.folderName }}/workflow/{{ $('Get many workflows').item.json.name }}",
+        "binaryData": true,
+        "binaryPropertyName": "Data"
+      },
+      "type": "n8n-nodes-base.dropbox",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        16
+      ],
+      "id": "d2930348-edf8-43ee-8639-dc3b58f477da",
+      "name": "Upload a file",
+      "credentials": {
+        "dropboxOAuth2Api": {
+          "id": "uegBvrglCqIUgTv5",
+          "name": "Dropbox account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "toJson",
+        "binaryPropertyName": "=Data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        1696,
+        -96
+      ],
+      "id": "cda33a0c-6b63-4417-a3d5-5fc8d863a11e",
+      "name": "Convert to File1"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "folder",
+        "path": "=/BACKUPS/BACKUP WEEKLY N8N/{{ $('Code in JavaScript').item.json.folderName }}/credentials"
+      },
+      "type": "n8n-nodes-base.dropbox",
+      "typeVersion": 1,
+      "position": [
+        896,
+        -176
+      ],
+      "id": "543dcc99-07ac-4dd9-b938-ebb196d8bcfd",
+      "name": "Create a folder1",
+      "executeOnce": true,
+      "credentials": {
+        "dropboxOAuth2Api": {
+          "id": "uegBvrglCqIUgTv5",
+          "name": "Dropbox account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "path": "=/BACKUPS/BACKUP WEEKLY N8N/{{ $('Code in JavaScript').item.json.folderName }}/credentials/{{ $('Code in JavaScript1').item.json.name }}",
+        "binaryData": true,
+        "binaryPropertyName": "Data"
+      },
+      "type": "n8n-nodes-base.dropbox",
+      "typeVersion": 1,
+      "position": [
+        1904,
+        -96
+      ],
+      "id": "ab4bfc19-4fe5-449a-a8af-e33fe7383cac",
+      "name": "Upload a file1",
+      "credentials": {
+        "dropboxOAuth2Api": {
+          "id": "uegBvrglCqIUgTv5",
+          "name": "Dropbox account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "command": "/home/demagogia/.nvm/versions/node/v22.16.0/bin/n8n export:credentials --all --decrypted\n"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1056,
+        -176
+      ],
+      "id": "749e0b36-4f6d-4c3f-81c1-288edec020f5",
+      "name": "Execute Command"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Obtenemos el texto plano que devolvió el comando\nconst rawOutput = $input.first().json.stdout;\n\n// 2. Lo convertimos (parseamos) de Texto a Objetos JSON reales\nlet credentials = [];\ntry {\n  credentials = JSON.parse(rawOutput);\n} catch (error) {\n  // Si falla, devolvemos array vacío o error controlado\n  return []; \n}\n\n// 3. Preparamos cada credencial como un item individual\nreturn credentials.map(cred => {\n  // Limpiamos el nombre para que sirva como nombre de archivo (sin espacios raros)\n  const safeName = cred.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();\n  \n  return {\n    json: {\n      ...cred, // Mantenemos toda la data original (incluyendo passwords)\n      // Agregamos un campo helper para facilitar el guardado\n      backupFileName: `credential_${safeName}_${cred.id}.json`\n    }\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1232,
+        -176
+      ],
+      "id": "b59a0643-4e99-46e4-a32d-2e75cc599feb",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1440,
+        -176
+      ],
+      "id": "2b3cacae-7c35-404f-94ca-e684ae27363c",
+      "name": "Loop Over Items1"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2112,
+        -96
+      ],
+      "id": "63c34609-c4ed-473e-b44f-fb3257d89cc7",
+      "name": "Wait1",
+      "webhookId": "f78506c6-a9d2-40f1-82fd-9b76452ef2c2"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -112,
+        0
+      ],
+      "id": "54ad8f58-752a-4a59-b3e8-eda737c29dea",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "folder",
+        "operation": "list",
+        "path": "/BACKUPS/BACKUP WEEKLY N8N/",
+        "returnAll": true,
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.dropbox",
+      "typeVersion": 1,
+      "position": [
+        80,
+        -176
+      ],
+      "id": "e60ab249-f1cb-49bd-a70e-ba304802dfdc",
+      "name": "List a folder",
+      "credentials": {
+        "dropboxOAuth2Api": {
+          "id": "uegBvrglCqIUgTv5",
+          "name": "Dropbox account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtMinute": 10
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -112,
+        -176
+      ],
+      "id": "3e6d3614-889c-40ca-bd9c-77657f87ecbf",
+      "name": "Schedule Trigger1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- CONFIGURACIÓN WEEKLY ---\nconst KEEP = 5; \nconst PREFIX = 'n8n_backup_weekly_'; // Asegúrate que tu carpeta semanal tenga este prefijo\n\nconst items = $input.all().map(i => i.json);\n\nconst backups = items.filter(f => \n  f.type === 'folder' && \n  f.name.startsWith(PREFIX)\n);\n\nif (backups.length <= KEEP) {\n  return [];\n}\n\nbackups.sort((a, b) => a.name.localeCompare(b.name));\n\nconst deleteCount = backups.length - KEEP;\n\nreturn backups.slice(0, deleteCount).map(folder => ({\n  json: {\n    path: folder.pathLower || folder.path_lower,\n    name: folder.name\n  }\n}));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        272,
+        -176
+      ],
+      "id": "42ac063c-caf8-4d52-a130-6ecb771c2943",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "folder",
+        "operation": "delete",
+        "path": "={{ $json.path }}"
+      },
+      "type": "n8n-nodes-base.dropbox",
+      "typeVersion": 1,
+      "position": [
+        464,
+        -176
+      ],
+      "id": "30493da7-3993-4b5b-8e01-61067653287f",
+      "name": "Delete a folder",
+      "credentials": {
+        "dropboxOAuth2Api": {
+          "id": "uegBvrglCqIUgTv5",
+          "name": "Dropbox account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# WEEKLY",
+        "height": 512,
+        "width": 2464
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -176,
+        -272
+      ],
+      "id": "453a0e07-3ef6-4ec1-b4b6-dca40a89bc93",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "filters": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.n8n",
+      "typeVersion": 1,
+      "position": [
+        464,
+        608
+      ],
+      "id": "d0e80714-2c7c-4cd0-b0f9-788010094537",
+      "name": "Get many workflows1",
+      "credentials": {
+        "n8nApi": {
+          "id": "KzlXYQKDhQQ1go78",
+          "name": "n8n account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const today = new Date();\nconst folderName = `n8n_backup_daily_${today.toISOString().split('T')[0]}`;\nreturn { folderName };\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        80,
+        608
+      ],
+      "id": "9272dba7-15b5-43d4-8d2b-346de919ec96",
+      "name": "Code in JavaScript3"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        672,
+        608
+      ],
+      "id": "9248c5d7-0ce1-440e-89b2-2c16bbc5c192",
+      "name": "Loop Over Items2"
+    },
+    {
+      "parameters": {
+        "operation": "toJson",
+        "binaryPropertyName": "=Data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        880,
+        624
+      ],
+      "id": "09abf941-cc09-4508-b3ac-1075ebd1a394",
+      "name": "Convert to File2"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1216,
+        624
+      ],
+      "id": "94652317-25eb-45ba-82f7-82000c35d640",
+      "name": "Wait2",
+      "webhookId": "5d3ae8d2-a826-4a07-83e2-2a476a27a81d"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "folder",
+        "path": "=/BACKUPS/BACKUP DAILY N8N/{{ $json.folderName }}/workflow"
+      },
+      "type": "n8n-nodes-base.dropbox",
+      "typeVersion": 1,
+      "position": [
+        272,
+        608
+      ],
+      "id": "591ea5d7-1e93-49af-be27-520f3a8e0ba4",
+      "name": "Create a folder2",
+      "credentials": {
+        "dropboxOAuth2Api": {
+          "id": "uegBvrglCqIUgTv5",
+          "name": "Dropbox account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "path": "=/BACKUPS/BACKUP DAILY N8N/{{ $('Code in JavaScript3').item.json.folderName }}/workflow/{{ $('Get many workflows1').item.json.name }}",
+        "binaryData": true,
+        "binaryPropertyName": "Data"
+      },
+      "type": "n8n-nodes-base.dropbox",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        624
+      ],
+      "id": "ec24bfb2-03c6-45af-8a2c-88170cc00203",
+      "name": "Upload a file2",
+      "credentials": {
+        "dropboxOAuth2Api": {
+          "id": "uegBvrglCqIUgTv5",
+          "name": "Dropbox account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "toJson",
+        "binaryPropertyName": "=Data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        1696,
+        512
+      ],
+      "id": "fd8f4196-71d5-45fa-a558-72f79829619e",
+      "name": "Convert to File3"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "folder",
+        "path": "=/BACKUPS/BACKUP DAILY N8N/{{ $('Code in JavaScript3').item.json.folderName }}/credentials"
+      },
+      "type": "n8n-nodes-base.dropbox",
+      "typeVersion": 1,
+      "position": [
+        896,
+        432
+      ],
+      "id": "c41f4a3c-90c2-481d-827b-eb7ba109b18d",
+      "name": "Create a folder3",
+      "executeOnce": true,
+      "credentials": {
+        "dropboxOAuth2Api": {
+          "id": "uegBvrglCqIUgTv5",
+          "name": "Dropbox account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "path": "=/BACKUPS/BACKUP DAILY N8N/{{ $('Code in JavaScript3').item.json.folderName }}/credentials/{{ $('Parser Credenciales').item.json.name }}",
+        "binaryData": true,
+        "binaryPropertyName": "Data"
+      },
+      "type": "n8n-nodes-base.dropbox",
+      "typeVersion": 1,
+      "position": [
+        1904,
+        512
+      ],
+      "id": "ca2bacf8-66dd-40df-a3c0-2b694e5c9e7a",
+      "name": "Upload a file3",
+      "credentials": {
+        "dropboxOAuth2Api": {
+          "id": "uegBvrglCqIUgTv5",
+          "name": "Dropbox account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "command": "/home/demagogia/.nvm/versions/node/v22.16.0/bin/n8n export:credentials --all --decrypted\n"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1056,
+        432
+      ],
+      "id": "9cb9866f-801f-4587-bf2e-d647651ff554",
+      "name": "Execute Command1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1440,
+        432
+      ],
+      "id": "3a6c75c8-4bcd-499b-b6b7-cdf23765ad3f",
+      "name": "Loop Over Items3"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2112,
+        512
+      ],
+      "id": "158cfcd6-cfef-43df-befb-22f2bd9ddb38",
+      "name": "Wait3",
+      "webhookId": "f78506c6-a9d2-40f1-82fd-9b76452ef2c2"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "folder",
+        "operation": "list",
+        "path": "/BACKUPS/BACKUP DAILY N8N/",
+        "returnAll": true,
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.dropbox",
+      "typeVersion": 1,
+      "position": [
+        80,
+        432
+      ],
+      "id": "ffc63b11-cbd2-444a-bc12-57d211284938",
+      "name": "List a folder1",
+      "credentials": {
+        "dropboxOAuth2Api": {
+          "id": "uegBvrglCqIUgTv5",
+          "name": "Dropbox account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 1
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -112,
+        432
+      ],
+      "id": "b563905b-8907-426d-8f1a-2a622883cf81",
+      "name": "Schedule Trigger3"
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- CONFIGURACIÓN DAILY ---\nconst KEEP = 14; \nconst PREFIX = 'n8n_backup_daily_';\n\n// 1. Obtener items\nconst items = $input.all().map(i => i.json);\n\n// 2. Filtrar solo backups DIARIOS\nconst backups = items.filter(f => \n  f.type === 'folder' && \n  f.name.startsWith(PREFIX)\n);\n\n// 3. Evaluar retención FIFO\n// Si hay 14 o menos, no hacemos nada.\nif (backups.length <= KEEP) {\n  return [];\n}\n\n// 4. Ordenar ascendente (el más viejo queda en índice 0)\n// Asume formato YYYY-MM-DD en el nombre\nbackups.sort((a, b) => a.name.localeCompare(b.name));\n\n// 5. Calcular cuántos sobran\nconst deleteCount = backups.length - KEEP; // Ej: 15 - 14 = 1\n\n// 6. Devolver lista de los que sobran para borrar\nreturn backups.slice(0, deleteCount).map(folder => ({\n  json: {\n    path: folder.pathLower || folder.path_lower,\n    name: folder.name\n  }\n}));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        272,
+        432
+      ],
+      "id": "7c616155-00a9-4872-94e6-24ab78238557",
+      "name": "Code in JavaScript5"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "folder",
+        "operation": "delete",
+        "path": "={{ $json.path }}"
+      },
+      "type": "n8n-nodes-base.dropbox",
+      "typeVersion": 1,
+      "position": [
+        464,
+        432
+      ],
+      "id": "bd98773e-e645-489f-b794-273bc370d4e5",
+      "name": "Delete a folder1",
+      "credentials": {
+        "dropboxOAuth2Api": {
+          "id": "uegBvrglCqIUgTv5",
+          "name": "Dropbox account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# DAILY",
+        "height": 512,
+        "width": 2464,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -176,
+        336
+      ],
+      "id": "2807b49f-0404-4666-a417-f6941ad9283d",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtMinute": 45
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -112,
+        608
+      ],
+      "id": "781d259b-56a7-42d8-a729-20b2e0da5a32",
+      "name": "Schedule Trigger4"
+    },
+    {
+      "parameters": {
+        "filters": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.n8n",
+      "typeVersion": 1,
+      "position": [
+        464,
+        -608
+      ],
+      "id": "a6ad7016-a77e-48db-b0b5-2c2a60052b1b",
+      "name": "Get many workflows2",
+      "credentials": {
+        "n8nApi": {
+          "id": "KzlXYQKDhQQ1go78",
+          "name": "n8n account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const today = new Date();\nconst folderName = `n8n_backup_monthly_${today.toISOString().split('T')[0]}`;\nreturn { folderName };\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        80,
+        -608
+      ],
+      "id": "8e28ad09-c7ae-4a3e-8a10-f18c8681cd43",
+      "name": "Code in JavaScript6"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        672,
+        -608
+      ],
+      "id": "dc338d4b-5e1c-41ec-98c5-d649aa7b3bef",
+      "name": "Loop Over Items4"
+    },
+    {
+      "parameters": {
+        "operation": "toJson",
+        "binaryPropertyName": "=Data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        880,
+        -592
+      ],
+      "id": "1c60759a-4cb7-4387-bef7-5b117427dd0d",
+      "name": "Convert to File4"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1216,
+        -592
+      ],
+      "id": "cde5684e-a5f5-4472-b95e-f8d3e6dcdcf8",
+      "name": "Wait4",
+      "webhookId": "5d3ae8d2-a826-4a07-83e2-2a476a27a81d"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "folder",
+        "path": "=/BACKUPS/BACKUP WEEKLY N8N/{{ $json.folderName }}/workflow"
+      },
+      "type": "n8n-nodes-base.dropbox",
+      "typeVersion": 1,
+      "position": [
+        272,
+        -608
+      ],
+      "id": "106e9ec0-5ec2-4589-9ed8-e7386bba45c7",
+      "name": "Create a folder4",
+      "credentials": {
+        "dropboxOAuth2Api": {
+          "id": "uegBvrglCqIUgTv5",
+          "name": "Dropbox account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "path": "=/BACKUPS/BACKUP WEEKLY N8N/{{ $('Code in JavaScript6').item.json.folderName }}/workflow/{{ $('Get many workflows2').item.json.name }}",
+        "binaryData": true,
+        "binaryPropertyName": "Data"
+      },
+      "type": "n8n-nodes-base.dropbox",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        -592
+      ],
+      "id": "e50e4e3e-5629-49c5-a2a3-d2532834399c",
+      "name": "Upload a file4",
+      "credentials": {
+        "dropboxOAuth2Api": {
+          "id": "uegBvrglCqIUgTv5",
+          "name": "Dropbox account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "toJson",
+        "binaryPropertyName": "=Data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        1696,
+        -704
+      ],
+      "id": "33ddc538-a575-4642-b96f-5a3ac6e53eab",
+      "name": "Convert to File5"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "folder",
+        "path": "=/BACKUPS/BACKUP WEEKLY N8N/{{ $('Code in JavaScript6').item.json.folderName }}/credentials"
+      },
+      "type": "n8n-nodes-base.dropbox",
+      "typeVersion": 1,
+      "position": [
+        896,
+        -784
+      ],
+      "id": "df388e3a-5c5f-41a6-abc0-1d60caa677cf",
+      "name": "Create a folder5",
+      "executeOnce": true,
+      "credentials": {
+        "dropboxOAuth2Api": {
+          "id": "uegBvrglCqIUgTv5",
+          "name": "Dropbox account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "path": "=/BACKUPS/BACKUP WEEKLY N8N/{{ $('Code in JavaScript6').item.json.folderName }}/credentials/{{ $('Code in JavaScript7').item.json.name }}",
+        "binaryData": true,
+        "binaryPropertyName": "Data"
+      },
+      "type": "n8n-nodes-base.dropbox",
+      "typeVersion": 1,
+      "position": [
+        1904,
+        -704
+      ],
+      "id": "fe23f808-72cd-4823-8a17-a2007066fd5c",
+      "name": "Upload a file5",
+      "credentials": {
+        "dropboxOAuth2Api": {
+          "id": "uegBvrglCqIUgTv5",
+          "name": "Dropbox account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "command": "/home/demagogia/.nvm/versions/node/v22.16.0/bin/n8n export:credentials --all --decrypted\n"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1056,
+        -784
+      ],
+      "id": "85bdc50f-5067-46f4-bb60-6f85ce034204",
+      "name": "Execute Command2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Obtenemos el texto plano que devolvió el comando\nconst rawOutput = $input.first().json.stdout;\n\n// 2. Lo convertimos (parseamos) de Texto a Objetos JSON reales\nlet credentials = [];\ntry {\n  credentials = JSON.parse(rawOutput);\n} catch (error) {\n  // Si falla, devolvemos array vacío o error controlado\n  return []; \n}\n\n// 3. Preparamos cada credencial como un item individual\nreturn credentials.map(cred => {\n  // Limpiamos el nombre para que sirva como nombre de archivo (sin espacios raros)\n  const safeName = cred.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();\n  \n  return {\n    json: {\n      ...cred, // Mantenemos toda la data original (incluyendo passwords)\n      // Agregamos un campo helper para facilitar el guardado\n      backupFileName: `credential_${safeName}_${cred.id}.json`\n    }\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1232,
+        -784
+      ],
+      "id": "a361ea30-5a41-4848-b178-5307aeae7afa",
+      "name": "Code in JavaScript7"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1440,
+        -784
+      ],
+      "id": "9e6eb265-9b0d-4cce-819f-3f2cd13f42b4",
+      "name": "Loop Over Items5"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2112,
+        -704
+      ],
+      "id": "62249586-0978-4f7f-877d-9f00b38b7c81",
+      "name": "Wait5",
+      "webhookId": "f78506c6-a9d2-40f1-82fd-9b76452ef2c2"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "months",
+              "triggerAtHour": 2
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -112,
+        -608
+      ],
+      "id": "3f6293bd-e50f-4586-9548-6f79d8445b7d",
+      "name": "Schedule Trigger2"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "folder",
+        "operation": "list",
+        "path": "/BACKUPS/BACKUP WEEKLY N8N/",
+        "returnAll": true,
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.dropbox",
+      "typeVersion": 1,
+      "position": [
+        80,
+        -784
+      ],
+      "id": "0ca905b4-eb72-41ad-a154-7557bfd0ad73",
+      "name": "List a folder2",
+      "credentials": {
+        "dropboxOAuth2Api": {
+          "id": "uegBvrglCqIUgTv5",
+          "name": "Dropbox account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtMinute": 10
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -112,
+        -784
+      ],
+      "id": "36ee1eee-4cd6-45f4-a04c-16e653bda468",
+      "name": "Schedule Trigger5"
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- CONFIGURACIÓN MONTHLY ---\nconst KEEP = 12; \nconst PREFIX = 'n8n_backup_monthly_'; // Prefijo para mensuales\n\nconst items = $input.all().map(i => i.json);\n\nconst backups = items.filter(f => \n  f.type === 'folder' && \n  f.name.startsWith(PREFIX)\n);\n\nif (backups.length <= KEEP) {\n  return [];\n}\n\nbackups.sort((a, b) => a.name.localeCompare(b.name));\n\nconst deleteCount = backups.length - KEEP;\n\nreturn backups.slice(0, deleteCount).map(folder => ({\n  json: {\n    path: folder.pathLower || folder.path_lower,\n    name: folder.name\n  }\n}));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        272,
+        -784
+      ],
+      "id": "12f032ec-73a2-4d26-be57-acf65703cb39",
+      "name": "Code in JavaScript8"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "folder",
+        "operation": "delete",
+        "path": "={{ $json.path }}"
+      },
+      "type": "n8n-nodes-base.dropbox",
+      "typeVersion": 1,
+      "position": [
+        464,
+        -784
+      ],
+      "id": "9fab5ea6-77d7-45b7-9bbc-13a75d67d279",
+      "name": "Delete a folder2",
+      "credentials": {
+        "dropboxOAuth2Api": {
+          "id": "uegBvrglCqIUgTv5",
+          "name": "Dropbox account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# MONTHLY",
+        "height": 512,
+        "width": 2464,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -176,
+        -880
+      ],
+      "id": "cda42236-c2bf-47df-bdc3-ac6d70c6bb02",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Obtenemos el texto plano que devolvió el comando\nconst rawOutput = $input.first().json.stdout;\n\n// 2. Lo convertimos (parseamos) de Texto a Objetos JSON reales\nlet credentials = [];\ntry {\n  credentials = JSON.parse(rawOutput);\n} catch (error) {\n  // Si falla, devolvemos array vacío o error controlado\n  return []; \n}\n\n// 3. Preparamos cada credencial como un item individual\nreturn credentials.map(cred => {\n  // Limpiamos el nombre para que sirva como nombre de archivo (sin espacios raros)\n  const safeName = cred.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();\n  \n  return {\n    json: {\n      ...cred, // Mantenemos toda la data original (incluyendo passwords)\n      // Agregamos un campo helper para facilitar el guardado\n      backupFileName: `credential_${safeName}_${cred.id}.json`\n    }\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1232,
+        432
+      ],
+      "id": "13e59d4b-e27c-49dc-9401-db83bf3cfb2f",
+      "name": "Parser Credenciales"
+    },
+    {
+      "parameters": {
+        "fromEmail": "contacto@edea.cl",
+        "toEmail": "contacto@edea.cl",
+        "subject": "=Succes {{ $('Code in JavaScript3').item.json.folderName }}",
+        "html": "=<div style=\"background-color: #F8F9FA; padding: 30px 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;\">\n  <div style=\"max-width: 600px; margin: 0 auto; background-color: #FFFFFF; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08);\">\n    \n    <!-- Header Verde -->\n    <div style=\"background: linear-gradient(135deg, #10B981 0%, #059669 100%); padding: 30px; text-align: center;\">\n      <h1 style=\"margin: 0; color: #FFFFFF; font-size: 24px; font-weight: 700;\">Backup Completado</h1>\n      <p style=\"margin: 8px 0 0 0; color: #D1FAE5; font-size: 14px;\">Respaldo Automático de n8n</p>\n    </div>\n\n    <!-- Contenido -->\n    <div style=\"padding: 30px;\">\n      \n      <p style=\"margin: 0 0 20px 0; color: #6B7280; font-size: 14px; line-height: 1.6; text-align: center;\">\n        El proceso de sincronización ha concluido correctamente. Todos los activos críticos han sido respaldados en el servidor remoto.\n      </p>\n\n      <!-- Grid de Métricas Principales -->\n      <table width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" style=\"margin-bottom: 25px;\">\n        <tr>\n          <!-- Workflows Count -->\n          <!-- OJO: Reemplaza 'Get many workflows1' si tu nodo se llama distinto en Weekly/Monthly -->\n          <td width=\"50%\" style=\"padding-right: 10px;\">\n            <div style=\"background-color: #F0FDF4; padding: 18px; border-radius: 8px; text-align: center; border: 1px solid #DCFCE7;\">\n              <span style=\"display: block; font-size: 32px; font-weight: 700; color: #059669;\">{{ $('Get many workflows1').all().length }}</span>\n              <span style=\"display: block; font-size: 12px; color: #047857; font-weight: 600; margin-top: 5px;\">Workflows</span>\n            </div>\n          </td>\n          \n          <!-- Credentials Count -->\n          <!-- OJO: Reemplaza 'Parser Credenciales' si tu nodo se llama distinto -->\n          <td width=\"50%\" style=\"padding-left: 10px;\">\n            <div style=\"background-color: #F0FDF4; padding: 18px; border-radius: 8px; text-align: center; border: 1px solid #DCFCE7;\">\n              <span style=\"display: block; font-size: 32px; font-weight: 700; color: #059669;\">{{ $('Parser Credenciales').all().length }}</span>\n              <span style=\"display: block; font-size: 12px; color: #047857; font-weight: 600; margin-top: 5px;\">Credenciales</span>\n            </div>\n          </td>\n        </tr>\n      </table>\n\n      <!-- Info Cards (Fecha y Duración) -->\n      <table width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" style=\"margin-bottom: 25px;\">\n        <tr>\n          <td width=\"50%\" style=\"padding-right: 10px;\">\n            <div style=\"background-color: #FAFAFA; padding: 12px; border-radius: 6px; border: 1px solid #E5E7EB;\">\n              <p style=\"margin: 0; font-size: 11px; color: #9CA3AF; font-weight: 600; text-transform: uppercase;\">Fecha</p>\n              <p style=\"margin: 5px 0 0 0; font-size: 13px; color: #1F2937; font-weight: 600;\">{{ $now.format('DD/MM/YYYY HH:mm') }}</p>\n            </div>\n          </td>\n          <td width=\"50%\" style=\"padding-left: 10px;\">\n            <div style=\"background-color: #FAFAFA; padding: 12px; border-radius: 6px; border: 1px solid #E5E7EB;\">\n              <p style=\"margin: 0; font-size: 11px; color: #9CA3AF; font-weight: 600; text-transform: uppercase;\">Duración</p>\n              <p style=\"margin: 5px 0 0 0; font-size: 13px; color: #1F2937; font-weight: 600;\">\n                {{ Math.round((new Date().getTime() - new Date($execution.startedAt).getTime()) / 1000) }} seg\n              </p>\n            </div>\n          </td>\n        </tr>\n      </table>\n\n      <!-- Server Status (Variables del nodo Parse Server Stats) -->\n      <div style=\"background-color: #F9FAFB; padding: 15px; border-radius: 8px; border: 1px solid #E5E7EB; margin-bottom: 20px;\">\n        <p style=\"margin: 0 0 12px 0; font-size: 11px; color: #6B7280; font-weight: 700; text-transform: uppercase;\">Estado del Servidor</p>\n        <table width=\"100%\" cellspacing=\"0\" cellpadding=\"0\">\n          <tr>\n            <!-- CPU -->\n            <td width=\"33%\" style=\"padding-right: 5px;\">\n              <table width=\"100%\">\n                <tr>\n                  <td style=\"font-size: 10px; color: #6B7280;\">CPU</td>\n                  <td align=\"right\" style=\"font-weight: 600; color: #1F2937;\">{{ $('Parse Server Stats').first().json.server.cpu.percent }}%</td>\n                </tr>\n              </table>\n            </td>\n            <!-- RAM -->\n            <td width=\"34%\" style=\"padding: 0 5px; border-left: 1px solid #D1D5DB; border-right: 1px solid #D1D5DB; padding-left: 10px; padding-right: 10px;\">\n              <table width=\"100%\">\n                <tr>\n                  <td style=\"font-size: 10px; color: #6B7280;\">RAM</td>\n                  <td align=\"right\" style=\"font-weight: 600; color: #1F2937;\">{{ $('Parse Server Stats').first().json.server.ram.percent }}%</td>\n                </tr>\n              </table>\n            </td>\n            <!-- DISK -->\n            <td width=\"33%\" style=\"padding-left: 5px;\">\n              <table width=\"100%\">\n                <tr>\n                  <td style=\"font-size: 10px; color: #6B7280;\">DISCO</td>\n                  <!-- Lógica condicional simple: Si disco > 90% ponlo rojo, sino normal -->\n                  <td align=\"right\" style=\"font-weight: 600; color: {{ $('Parse Server Stats').first().json.server.disk.percent > 90 ? '#EF4444' : '#1F2937' }};\">\n                    {{ $('Parse Server Stats').first().json.server.disk.percent }}%\n                  </td>\n                </tr>\n              </table>\n            </td>\n          </tr>\n        </table>\n      </div>\n\n    </div>\n\n    <!-- Footer -->\n    <div style=\"background-color: #F3F4F6; padding: 15px; text-align: center; border-top: 1px solid #E5E7EB; font-size: 12px; color: #6B7280;\">\n      <a href=\"{{ $json.execution.timestamp }}\" style=\"color: #6B7280; text-decoration: none;\">Ver log (#{{ $execution.id }})</a> • Almacenado en <strong>Dropbox / BACKUP N8N</strong>\n    </div>\n  </div>\n</div>\n",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        2112,
+        352
+      ],
+      "id": "3dd3f777-420b-46d5-83b5-5eafea17b890",
+      "name": "Send email",
+      "webhookId": "625d046c-bc54-434e-a2ce-3a6b96a5be73",
+      "executeOnce": true,
+      "credentials": {
+        "smtp": {
+          "id": "tKU3m5eFHFbOwNrX",
+          "name": "contacto@edea.cl"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "command": "RAM=$(free -m | awk 'NR==2{printf \"%.2f|%.0f|%.0f\", $3*100/$2, $3, $2 }'); CPU=$(top -bn1 | grep \"Cpu(s)\" | sed \"s/.*, *\\([0-9.]*\\)%* id.*/\\1/\" | awk '{print 100 - $1}'); DISK=$(df -h / | awk 'NR==2 {print $5}' | sed 's/%//'); echo \"$RAM|$CPU|$DISK\" | tr -d '\\n'\n"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1696,
+        352
+      ],
+      "id": "2e06e63b-98ba-4a56-9285-73a00a512c15",
+      "name": "Execute Command3",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "fromEmail": "contacto@edea.cl",
+        "toEmail": "contacto@edea.cl",
+        "subject": "=Succes {{ $('Code in JavaScript3').item.json.folderName }}",
+        "html": "=<div style=\"font-family: 'Helvetica Neue', Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background-color: #ffffff;\">\n  \n  <!-- Encabezado -->\n  <div style=\"background-color: #27C46B; padding: 30px 20px; text-align: center;\">\n    <img src=\"https://cdn-icons-png.flaticon.com/512/1442/1442912.png\" width=\"48\" height=\"48\" alt=\"Check\" style=\"display: block; margin: 0 auto 10px auto; filter: brightness(0) invert(1);\">\n    <h2 style=\"margin: 0; color: #ffffff; font-size: 22px; font-weight: 600; letter-spacing: 0.5px;\">Backup Finalizado</h2>\n    <p style=\"margin: 5px 0 0 0; color: #e8f5e9; font-size: 13px; opacity: 0.9;\">Respaldo Automático Diario</p>\n  </div>\n\n  <div style=\"padding: 25px;\">\n    \n    <p style=\"font-size: 15px; margin-top: 0; line-height: 1.6; color: #555; text-align: center;\">\n      El proceso de sincronización ha concluido correctamente. Todos los activos críticos han sido respaldados en el servidor remoto.\n    </p>\n\n    <!-- Caja de Resumen -->\n    <div style=\"background-color: #f8f9fa; border: 1px solid #e1e4e8; padding: 20px; margin: 25px 0; border-radius: 8px;\">\n      <table style=\"width: 100%; border-collapse: collapse;\">\n        <tr>\n          <td style=\"width: 30px; vertical-align: middle;\">\n            <img src=\"https://cdn-icons-png.flaticon.com/512/2693/2693507.png\" width=\"20\" height=\"20\" alt=\"Calendar\" style=\"display: block; opacity: 0.7;\">\n          </td>\n          <td style=\"padding: 8px 0; color: #555; font-size: 14px;\">Fecha de ejecución</td>\n          <td style=\"padding: 8px 0; font-weight: 600; text-align: right; color: #2D3E50;\">{{ $now.format('DD/MM/YYYY HH:mm') }}</td>\n        </tr>\n        <tr>\n          <td style=\"width: 30px; vertical-align: middle;\">\n            <img src=\"https://cdn-icons-png.flaticon.com/512/2921/2921226.png\" width=\"20\" height=\"20\" alt=\"Clock\" style=\"display: block; opacity: 0.7;\">\n          </td>\n          <td style=\"padding: 8px 0; color: #555; font-size: 14px;\">Tiempo total</td>\n          <td style=\"padding: 8px 0; font-weight: 600; text-align: right; color: #2D3E50;\">{{ Math.round((new Date().getTime() - new Date($execution.startedAt).getTime()) / 1000) }}s</td>\n        </tr>\n      </table>\n    </div>\n\n    <!-- Título Sección Métricas -->\n    <div style=\"text-align: center; margin-bottom: 15px;\">\n      <h3 style=\"margin: 0; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #888; font-weight: 600;\">Resumen de Activos</h3>\n    </div>\n    \n    <!-- Tarjetas de Métricas -->\n    <table style=\"width: 100%; border-spacing: 0;\">\n      <tr>\n        <td style=\"width: 48%; padding-right: 5px;\">\n          <div style=\"background-color: #ffffff; border: 1px solid #e1e4e8; border-radius: 8px; padding: 20px 10px; text-align: center;\">\n            <div style=\"font-size: 32px; font-weight: 700; color: #2D3E50; line-height: 1; margin-bottom: 5px;\">{{ $('Get many workflows1').all().length }}</div>\n            <div style=\"font-size: 10px; font-weight: bold; color: #8898aa; text-transform: uppercase;\">Workflows</div>\n          </div>\n        </td>\n        <td style=\"width: 48%; padding-left: 5px;\">\n          <div style=\"background-color: #ffffff; border: 1px solid #e1e4e8; border-radius: 8px; padding: 20px 10px; text-align: center;\">\n            <div style=\"font-size: 32px; font-weight: 700; color: #2D3E50; line-height: 1; margin-bottom: 5px;\">{{ $('Parser Credenciales').all().length }}</div>\n            <div style=\"font-size: 10px; font-weight: bold; color: #8898aa; text-transform: uppercase;\">Credenciales</div>\n          </div>\n        </td>\n      </tr>\n    </table>\n\n  </div>\n\n  <!-- Footer -->\n  <div style=\"background-color: #fafbfc; padding: 15px; text-align: center; font-size: 11px; color: #999; border-top: 1px solid #eee;\">\n    <img src=\"https://cdn-icons-png.flaticon.com/512/1077/1077114.png\" width=\"12\" height=\"12\" alt=\"Cloud\" style=\"vertical-align: middle; margin-right: 5px; opacity: 0.5;\">\n    Almacenado en <strong>Dropbox / BACKUP N8N</strong>\n  </div>\n  \n</div>\n",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        2112,
+        -240
+      ],
+      "id": "274081e9-fd4a-4ce8-9cd3-47983975ad23",
+      "name": "Send email1",
+      "webhookId": "625d046c-bc54-434e-a2ce-3a6b96a5be73",
+      "executeOnce": true,
+      "credentials": {
+        "smtp": {
+          "id": "tKU3m5eFHFbOwNrX",
+          "name": "contacto@edea.cl"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "command": "RAM=$(free -m | awk 'NR==2{printf \"%.2f|%.0f|%.0f\", $3*100/$2, $3, $2 }'); CPU=$(top -bn1 | grep \"Cpu(s)\" | sed \"s/.*, *\\([0-9.]*\\)%* id.*/\\1/\" | awk '{print 100 - $1}'); DISK=$(df -h / | awk 'NR==2 {print $5}' | sed 's/%//'); echo \"$RAM|$CPU|$DISK\" | tr -d '\\n'\n"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1696,
+        -240
+      ],
+      "id": "669b0a34-2cf8-4584-85c4-ec3e37dbb905",
+      "name": "Execute Command4",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Obtenemos la salida del comando anterior\nconst commandOutput = $input.first().json.stdout || \"\";\n\n// Separamos por el caracter pipe \"|\" (o coma si no cambiaste el comando)\n// Asumiendo formato: RAM_%, RAM_USED, RAM_TOTAL, CPU_%, DISK_%\nconst parts = commandOutput.split('|'); \n\n// Función auxiliar segura (por si viene vacío)\nconst getVal = (index, suffix = \"\") => {\n  return parts[index] ? parts[index].trim() + suffix : \"N/A\";\n};\n\n// Formateamos valores\n// RAM % a veces viene con coma decimal (56,06), lo dejamos como string para no complicar\nconst ramPercent = getVal(0); \nconst ramUsed = getVal(1);\nconst ramTotal = getVal(2);\nconst cpuPercent = getVal(3);\nconst diskPercent = getVal(4);\n\n// Retornamos un objeto limpio y fácil de usar en el HTML\nreturn {\n  server: {\n    ram: {\n      percent: ramPercent,\n      used: ramUsed,\n      total: ramTotal,\n      text: `${ramUsed} / ${ramTotal} MB`\n    },\n    cpu: {\n      percent: cpuPercent\n    },\n    disk: {\n      percent: diskPercent\n    }\n  },\n  // Pasamos también los metadatos de ejecución anteriores si los necesitas\n  execution: {\n    timestamp: new Date().toISOString()\n  }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1904,
+        -240
+      ],
+      "id": "19ac3fea-68f9-4ba6-bc43-f83d9566acfd",
+      "name": "Code in JavaScript9",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "fromEmail": "contacto@edea.cl",
+        "toEmail": "contacto@edea.cl",
+        "subject": "=Succes {{ $('Code in JavaScript3').item.json.folderName }}",
+        "html": "=<div style=\"font-family: 'Helvetica Neue', Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background-color: #ffffff;\">\n  \n  <!-- Encabezado -->\n  <div style=\"background-color: #27C46B; padding: 30px 20px; text-align: center;\">\n    <img src=\"https://cdn-icons-png.flaticon.com/512/1442/1442912.png\" width=\"48\" height=\"48\" alt=\"Check\" style=\"display: block; margin: 0 auto 10px auto; filter: brightness(0) invert(1);\">\n    <h2 style=\"margin: 0; color: #ffffff; font-size: 22px; font-weight: 600; letter-spacing: 0.5px;\">Backup Finalizado</h2>\n    <p style=\"margin: 5px 0 0 0; color: #e8f5e9; font-size: 13px; opacity: 0.9;\">Respaldo Automático Diario</p>\n  </div>\n\n  <div style=\"padding: 25px;\">\n    \n    <p style=\"font-size: 15px; margin-top: 0; line-height: 1.6; color: #555; text-align: center;\">\n      El proceso de sincronización ha concluido correctamente. Todos los activos críticos han sido respaldados en el servidor remoto.\n    </p>\n\n    <!-- Caja de Resumen -->\n    <div style=\"background-color: #f8f9fa; border: 1px solid #e1e4e8; padding: 20px; margin: 25px 0; border-radius: 8px;\">\n      <table style=\"width: 100%; border-collapse: collapse;\">\n        <tr>\n          <td style=\"width: 30px; vertical-align: middle;\">\n            <img src=\"https://cdn-icons-png.flaticon.com/512/2693/2693507.png\" width=\"20\" height=\"20\" alt=\"Calendar\" style=\"display: block; opacity: 0.7;\">\n          </td>\n          <td style=\"padding: 8px 0; color: #555; font-size: 14px;\">Fecha de ejecución</td>\n          <td style=\"padding: 8px 0; font-weight: 600; text-align: right; color: #2D3E50;\">{{ $now.format('DD/MM/YYYY HH:mm') }}</td>\n        </tr>\n        <tr>\n          <td style=\"width: 30px; vertical-align: middle;\">\n            <img src=\"https://cdn-icons-png.flaticon.com/512/2921/2921226.png\" width=\"20\" height=\"20\" alt=\"Clock\" style=\"display: block; opacity: 0.7;\">\n          </td>\n          <td style=\"padding: 8px 0; color: #555; font-size: 14px;\">Tiempo total</td>\n          <td style=\"padding: 8px 0; font-weight: 600; text-align: right; color: #2D3E50;\">{{ Math.round((new Date().getTime() - new Date($execution.startedAt).getTime()) / 1000) }}s</td>\n        </tr>\n      </table>\n    </div>\n\n    <!-- Título Sección Métricas -->\n    <div style=\"text-align: center; margin-bottom: 15px;\">\n      <h3 style=\"margin: 0; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #888; font-weight: 600;\">Resumen de Activos</h3>\n    </div>\n    \n    <!-- Tarjetas de Métricas -->\n    <table style=\"width: 100%; border-spacing: 0;\">\n      <tr>\n        <td style=\"width: 48%; padding-right: 5px;\">\n          <div style=\"background-color: #ffffff; border: 1px solid #e1e4e8; border-radius: 8px; padding: 20px 10px; text-align: center;\">\n            <div style=\"font-size: 32px; font-weight: 700; color: #2D3E50; line-height: 1; margin-bottom: 5px;\">{{ $('Get many workflows1').all().length }}</div>\n            <div style=\"font-size: 10px; font-weight: bold; color: #8898aa; text-transform: uppercase;\">Workflows</div>\n          </div>\n        </td>\n        <td style=\"width: 48%; padding-left: 5px;\">\n          <div style=\"background-color: #ffffff; border: 1px solid #e1e4e8; border-radius: 8px; padding: 20px 10px; text-align: center;\">\n            <div style=\"font-size: 32px; font-weight: 700; color: #2D3E50; line-height: 1; margin-bottom: 5px;\">{{ $('Parser Credenciales').all().length }}</div>\n            <div style=\"font-size: 10px; font-weight: bold; color: #8898aa; text-transform: uppercase;\">Credenciales</div>\n          </div>\n        </td>\n      </tr>\n    </table>\n\n  </div>\n\n  <!-- Footer -->\n  <div style=\"background-color: #fafbfc; padding: 15px; text-align: center; font-size: 11px; color: #999; border-top: 1px solid #eee;\">\n    <img src=\"https://cdn-icons-png.flaticon.com/512/1077/1077114.png\" width=\"12\" height=\"12\" alt=\"Cloud\" style=\"vertical-align: middle; margin-right: 5px; opacity: 0.5;\">\n    Almacenado en <strong>Dropbox / BACKUP N8N</strong>\n  </div>\n  \n</div>\n",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        2112,
+        -848
+      ],
+      "id": "f7aa49f6-1561-4591-bb8c-4b27bdb21468",
+      "name": "Send email2",
+      "webhookId": "625d046c-bc54-434e-a2ce-3a6b96a5be73",
+      "executeOnce": true,
+      "credentials": {
+        "smtp": {
+          "id": "tKU3m5eFHFbOwNrX",
+          "name": "contacto@edea.cl"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "command": "RAM=$(free -m | awk 'NR==2{printf \"%.2f|%.0f|%.0f\", $3*100/$2, $3, $2 }'); CPU=$(top -bn1 | grep \"Cpu(s)\" | sed \"s/.*, *\\([0-9.]*\\)%* id.*/\\1/\" | awk '{print 100 - $1}'); DISK=$(df -h / | awk 'NR==2 {print $5}' | sed 's/%//'); echo \"$RAM|$CPU|$DISK\" | tr -d '\\n'\n"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1696,
+        -848
+      ],
+      "id": "c9f8f6b3-bec0-4202-88d6-6c745362611e",
+      "name": "Execute Command5",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Obtenemos la salida del comando anterior\nconst commandOutput = $input.first().json.stdout || \"\";\n\n// Separamos por el caracter pipe \"|\" (o coma si no cambiaste el comando)\n// Asumiendo formato: RAM_%, RAM_USED, RAM_TOTAL, CPU_%, DISK_%\nconst parts = commandOutput.split('|'); \n\n// Función auxiliar segura (por si viene vacío)\nconst getVal = (index, suffix = \"\") => {\n  return parts[index] ? parts[index].trim() + suffix : \"N/A\";\n};\n\n// Formateamos valores\n// RAM % a veces viene con coma decimal (56,06), lo dejamos como string para no complicar\nconst ramPercent = getVal(0); \nconst ramUsed = getVal(1);\nconst ramTotal = getVal(2);\nconst cpuPercent = getVal(3);\nconst diskPercent = getVal(4);\n\n// Retornamos un objeto limpio y fácil de usar en el HTML\nreturn {\n  server: {\n    ram: {\n      percent: ramPercent,\n      used: ramUsed,\n      total: ramTotal,\n      text: `${ramUsed} / ${ramTotal} MB`\n    },\n    cpu: {\n      percent: cpuPercent\n    },\n    disk: {\n      percent: diskPercent\n    }\n  },\n  // Pasamos también los metadatos de ejecución anteriores si los necesitas\n  execution: {\n    timestamp: new Date().toISOString()\n  }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1904,
+        -848
+      ],
+      "id": "11390680-eb9c-4c94-b7ba-6834e547acbb",
+      "name": "Code in JavaScript10",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Obtenemos la salida del comando anterior\nconst commandOutput = $input.first().json.stdout || \"\";\n\n// Separamos por el caracter pipe \"|\" (o coma si no cambiaste el comando)\n// Asumiendo formato: RAM_%, RAM_USED, RAM_TOTAL, CPU_%, DISK_%\nconst parts = commandOutput.split('|'); \n\n// Función auxiliar segura (por si viene vacío)\nconst getVal = (index, suffix = \"\") => {\n  return parts[index] ? parts[index].trim() + suffix : \"N/A\";\n};\n\n// Formateamos valores\n// RAM % a veces viene con coma decimal (56,06), lo dejamos como string para no complicar\nconst ramPercent = getVal(0); \nconst ramUsed = getVal(1);\nconst ramTotal = getVal(2);\nconst cpuPercent = getVal(3);\nconst diskPercent = getVal(4);\n\n// Retornamos un objeto limpio y fácil de usar en el HTML\nreturn {\n  server: {\n    ram: {\n      percent: ramPercent,\n      used: ramUsed,\n      total: ramTotal,\n      text: `${ramUsed} / ${ramTotal} MB`\n    },\n    cpu: {\n      percent: cpuPercent\n    },\n    disk: {\n      percent: diskPercent\n    }\n  },\n  // Pasamos también los metadatos de ejecución anteriores si los necesitas\n  execution: {\n    timestamp: new Date().toISOString()\n  }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1904,
+        352
+      ],
+      "id": "9c6f0443-7922-4992-8afc-bfc26e197f26",
+      "name": "Parse Server Stats",
+      "executeOnce": true
+    }
+  ],
+  "connections": {
+    "Get many workflows": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Create a folder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Create a folder1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Upload a file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a folder": {
+      "main": [
+        [
+          {
+            "node": "Get many workflows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload a file": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File1": {
+      "main": [
+        [
+          {
+            "node": "Upload a file1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a folder1": {
+      "main": [
+        [
+          {
+            "node": "Execute Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload a file1": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [
+          {
+            "node": "Execute Command4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Convert to File1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List a folder": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger1": {
+      "main": [
+        [
+          {
+            "node": "List a folder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Delete a folder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many workflows1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "node": "Create a folder2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items2": {
+      "main": [
+        [
+          {
+            "node": "Create a folder3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Convert to File2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File2": {
+      "main": [
+        [
+          {
+            "node": "Upload a file2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait2": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a folder2": {
+      "main": [
+        [
+          {
+            "node": "Get many workflows1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload a file2": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File3": {
+      "main": [
+        [
+          {
+            "node": "Upload a file3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a folder3": {
+      "main": [
+        [
+          {
+            "node": "Execute Command1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload a file3": {
+      "main": [
+        [
+          {
+            "node": "Wait3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command1": {
+      "main": [
+        [
+          {
+            "node": "Parser Credenciales",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items3": {
+      "main": [
+        [
+          {
+            "node": "Execute Command3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Convert to File3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait3": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List a folder1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger3": {
+      "main": [
+        [
+          {
+            "node": "List a folder1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript5": {
+      "main": [
+        [
+          {
+            "node": "Delete a folder1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger4": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many workflows2": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript6": {
+      "main": [
+        [
+          {
+            "node": "Create a folder4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items4": {
+      "main": [
+        [
+          {
+            "node": "Create a folder5",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Convert to File4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File4": {
+      "main": [
+        [
+          {
+            "node": "Upload a file4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait4": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a folder4": {
+      "main": [
+        [
+          {
+            "node": "Get many workflows2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload a file4": {
+      "main": [
+        [
+          {
+            "node": "Wait4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File5": {
+      "main": [
+        [
+          {
+            "node": "Upload a file5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a folder5": {
+      "main": [
+        [
+          {
+            "node": "Execute Command2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload a file5": {
+      "main": [
+        [
+          {
+            "node": "Wait5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command2": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript7": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items5": {
+      "main": [
+        [
+          {
+            "node": "Execute Command5",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Convert to File5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait5": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger2": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List a folder2": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger5": {
+      "main": [
+        [
+          {
+            "node": "List a folder2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript8": {
+      "main": [
+        [
+          {
+            "node": "Delete a folder2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parser Credenciales": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command3": {
+      "main": [
+        [
+          {
+            "node": "Parse Server Stats",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command4": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript9": {
+      "main": [
+        [
+          {
+            "node": "Send email1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command5": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript10",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript10": {
+      "main": [
+        [
+          {
+            "node": "Send email2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Server Stats": {
+      "main": [
+        [
+          {
+            "node": "Send email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c0c550501b7896ab0eff6edacfb19ee553f2da638e369fa0272020aa7d2ebf5a"
+  }
+}
