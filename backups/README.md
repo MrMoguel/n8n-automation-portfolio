@@ -66,3 +66,7 @@ Para restaurar workflows desde un respaldo:
 
 ---
 **Monitoreo:** Revise regularmente los logs del workflow para detectar fallos de sincronización.
+
+# 🧩 Subflujo de Procesamiento
+![Diagrama del Subflujo](./subflow-screenshot.png)
+
