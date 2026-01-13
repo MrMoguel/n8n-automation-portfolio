@@ -1,0 +1,4060 @@
+{
+  "name": "Articulo Los Prismas",
+  "nodes": [
+    {
+      "parameters": {
+        "model": "openai/gpt-4-turbo",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -2112,
+        1312
+      ],
+      "id": "bbffe34c-dff3-447d-86b8-a94fa802e51a",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "QETT8kUiuXjnLbpZ",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 1
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -2352,
+        1136
+      ],
+      "id": "6dcafc0f-55fc-4dc3-a3ea-36c16e78d828",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.mensaje }}",
+        "options": {
+          "systemMessage": "=Tu tarea es generar un título original, atractivo y optimizado para SEO para un artículo del blog losprismas.com, dentro de la categoría “Herramientas Esenciales”.\n\n🔍 Enfoque editorial:\nEl título debe proponer un tema valioso y realista que ayude a las personas a mejorar su vida cotidiana, resolver bloqueos personales o crear hábitos más saludables, productivos o conscientes.\n\nNo se trata solo de tecnología. Puedes incluir:\n\nMétodos analógicos (como journaling o listas manuscritas)\n\nPrincipios psicológicos o emocionales que funcionen como herramientas\n\nEstrategias caseras, hábitos sencillos, ideas sostenibles, o técnicas ancestrales validadas por la ciencia o la experiencia.\n\n✅ Características del título:\n\nTiene que sonar como una búsqueda real que haría alguien que quiere mejorar su vida de forma práctica pero profunda.\n\nDebe conectar con problemas o metas comunes: el caos mental, la rutina, el desorden, la ansiedad, la desmotivación, etc.\n\nIdealmente con un tono cálido, reflexivo o esperanzador, como el estilo característico de losprismas.com.\n\n📌 Restricciones:\n- Escribir en español.\n- No usar comillas ni adornos.\n- No incluir años ni frases genéricas como “guía definitiva” o “en 2024”.\n- No repetir estructuras comunes (como “Las 5 mejores…”).\n\nConsulta esta base de datos para evitar repeticiones:\n\nSELECT titulo FROM articulos_generados;\n\n🧾 Salida esperada:\nDevuelve solo el título, sin comillas, sin viñetas, sin formato adicional."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -2112,
+        1136
+      ],
+      "id": "e9d76e95-6c12-41b2-8691-092b6a934efb",
+      "name": "Generar título SEO único"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.titulo }}",
+        "options": {
+          "systemMessage": "=Tu tarea es redactar un artículo completo, extenso y valioso en formato Markdown para el blog losprismas.com, dentro de la categoría \"Herramientas Esenciales\".\n\n🧭 Enfoque:\nEscribe como si fueras un experto real que desea ayudar a personas a mejorar su vida diaria. Usa un tono humano, claro y útil — mezcla experiencia personal, consejos aplicables y, cuando sea relevante, respaldo de profesionales o expertos reconocidos (actuales o históricos).\n\n✅ Requisitos generales:\nEl artículo debe ayudar al lector a implementar herramientas prácticas en su vida personal o laboral. Estas herramientas pueden ser analógicas, mentales, físicas o basadas en hábitos. No te centres solo en tecnología.\n\n📚 Fuentes y autoridad:\nCuando tenga sentido, menciona brevemente ideas validadas por expertos, estudios, autores o figuras públicas. Ejemplos:\n\n- “Según un estudio de la Universidad de Stanford...”\n- “La psicóloga clínica Mariana García recomienda...”\n- “El escritor James Clear, autor de *Hábitos Atómicos*, sugiere que…”\n\n⚠️ No inventes citas falsas con nombres inexistentes. Usa nombres reales o generalidades válidas.\n\n✅ Estructura y formato requerido:\n\nInicia con un bloque TOML delimitado por +++:\n\n+++\ndate = valor\ndraft = false\ntitle = \"{{ $json.titulo }}\"\n+++\n\n❗ Deja el campo `date = valor` exactamente así. Será reemplazado automáticamente en el flujo.\n\nCuerpo del artículo:\n\n1. **Introducción** (2–3 párrafos que conecten con el lector y expliquen la utilidad del contenido).\n2. **3 a 5 secciones** usando `##` y `###` para organizar ideas claras y aplicables.\n\nIncluye en el desarrollo:\n\n- ✅ Listas (numeradas o con viñetas)\n- ✅ Comparaciones (formato tabla Markdown)\n- ✅ Pros y contras\n- ✅ Errores comunes\n- ✅ Consejos profesionales (citando autores o figuras conocidas cuando sea útil)\n- ✅ Casos reales o ejemplos cotidianos\n\n📸 Imágenes sugeridas para IA:\n\nInserta **3 sugerencias de imagen**, ubicadas donde tengan sentido en el contenido. Usa esta sintaxis:\n\n![IA-sugerencia: descripción visual clara y concreta]\n\n🚫 No pongas las imágenes al final del artículo.\n\n📏 Extensión:\nEntre 1.600 y 2.000 palabras. No acortes el contenido si no es necesario.\n\n🚫 Restricciones:\n\nNo repitas el título como encabezado (#).\n\nNo incluyas enlaces externos.\n\nNo uses frases como “en este artículo veremos...”.\n\nNo expliques el formato Markdown ni el bloque TOML.\n\n🎯 Entrada:\nUsa el título dinámicamente asignado:\n\n{{ $json.titulo }}\n\n🧾 Salida esperada:\nUn artículo en formato Markdown compatible con Hugo, con metadatos TOML al inicio y contenido bien estructurado."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -1712,
+        1136
+      ],
+      "id": "9e242df5-0e7d-40be-bb2a-da2111dc64ac",
+      "name": "Generar contenido completo en Markdown"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4-turbo",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -1712,
+        1312
+      ],
+      "id": "07470c37-09a4-4628-954a-eee1a720a20e",
+      "name": "OpenRouter Chat Model1",
+      "credentials": {
+        "openRouterApi": {
+          "id": "QETT8kUiuXjnLbpZ",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "articulos_generados",
+          "mode": "list",
+          "cachedResultName": "articulos_generados"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "titulo": "={{ $json.output }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "titulo",
+              "displayName": "titulo",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "fecha_creacion",
+              "displayName": "fecha_creacion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -1840,
+        1136
+      ],
+      "id": "d3b03496-8349-4566-b5ac-a29195207c99",
+      "name": "Insertar nuevo título",
+      "credentials": {
+        "postgres": {
+          "id": "25vNRG11YucIzspL",
+          "name": "\tPostgreSQL Prisma"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT titulo FROM articulos_generados;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        -1952,
+        1312
+      ],
+      "id": "9c44dbe0-ea77-413d-ae37-6152a667e595",
+      "name": "Postgres1",
+      "credentials": {
+        "postgres": {
+          "id": "25vNRG11YucIzspL",
+          "name": "\tPostgreSQL Prisma"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "=/mnt/n8n-output/{{ $('Edit Fields3').item.json.titulo }}",
+        "dataPropertyName": "binary.data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        48,
+        1136
+      ],
+      "id": "f2669b60-20c2-43fa-aa22-b241ff233daa",
+      "name": "Read/Write Files from Disk"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "46f3e3e8-a3a1-4f29-b314-254a74ad6bcb",
+              "name": "data",
+              "value": "={{ $('Generar contenido completo en Markdown').item.json.output }}",
+              "type": "string"
+            },
+            {
+              "id": "11a78287-8ab6-4cd0-94b6-94f1380ff1ab",
+              "name": "filename",
+              "value": "={{ $('Insertar nuevo título').item.json.titulo }}.md",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -496,
+        1136
+      ],
+      "id": "a1d32637-85b0-497e-ad34-7027c517368c",
+      "name": "Edit Fields",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "11eac4ad-2d02-4907-bbd9-719f4973e375",
+              "name": "mensaje",
+              "value": "genera un titulo",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2240,
+        1136
+      ],
+      "id": "c18c069f-01ee-4403-b4dc-71262f4bd165",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "markdown",
+        "binaryPropertyName": "binary.data",
+        "options": {
+          "fileName": "={{ $json.titulo }}"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        -112,
+        1136
+      ],
+      "id": "22e6c218-9b87-411a-9a22-b83d0dd1414a",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "jsCode": "const markdown = $input.first().json.output;\nconst regex = /!\\[IA-sugerencia: (.*?)\\]/g;\nlet matches = [];\nlet m;\nlet count = 1;\n\nwhile ((m = regex.exec(markdown)) !== null) {\n  matches.push({\n    prompt: m[1],\n    marcadorOriginal: m[0],\n    nombreArchivo: `imagen-${count}.png`\n  });\n  count++;\n}\n\nreturn matches.map(imagen => ({ json: imagen }));\n$input.first().json.output"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1056,
+        1136
+      ],
+      "id": "3c3a451c-04b6-4071-a338-7ba3697ce3c5",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "model": "=dall-e-3",
+        "prompt": "={{ $json.prompt }}",
+        "options": {
+          "returnImageUrls": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -944,
+        1136
+      ],
+      "id": "79549556-0097-4edb-be85-2cb4c644c6df",
+      "name": "Generador imagen",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "credentials": {
+        "openAiApi": {
+          "id": "qRqeWgwWSInHs854",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Generador imagen').item.json.url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "binary.data"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -800,
+        1136
+      ],
+      "id": "98f0b726-6bbf-4404-992a-67029ef9ff57",
+      "name": "Descargar Imagen"
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "=/mnt/n8n-output/imagenes/imagen{{$itemIndex + $('Code1').item.json.stdout + 1}}.png",
+        "dataPropertyName": "binary.data",
+        "options": {
+          "append": false
+        }
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        -640,
+        1136
+      ],
+      "id": "e53eac39-bde1-4955-9b49-fd5599e5009d",
+      "name": "Read/Write Files from Disk2",
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "jsCode": "const offset = parseInt($node[\"Contar Imágenes Existentes\"].json[\"stdout\"]) || 0;\n\nreturn items.map((item, index) => {\n  return {\n    json: {\n      ...item.json,\n      nombreImagen: `/mnt/n8n-output/imagenes/imagen${offset + index + 1}.png`\n    },\n    binary: item.binary\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1312,
+        1136
+      ],
+      "id": "8d2ffb0d-8425-4cae-a66c-494776d81f4c",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "executeOnce": false,
+        "command": "ls /mnt/n8n-output/imagenes | grep -oP 'imagen\\d+\\.png' | wc -l"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        -1440,
+        1136
+      ],
+      "id": "1b80a115-3e6e-4017-a86f-f066c2f76077",
+      "name": "Contar Imágenes Existentes",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "de6a80fd-3c53-4b62-97f2-9f0499dc95be",
+              "name": "output",
+              "value": "={{ $('Generar contenido completo en Markdown').item.json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1200,
+        1136
+      ],
+      "id": "e0a0cd6b-2b79-4fa4-ae77-ce36ca3a2e71",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const markdownOriginal = $input.first().json.data;\nconst rutaBase = \"https://los-prismas.web.app/img/\";\nconst tituloSeo = $('Generar título SEO único').first().json.output;\n\n// 1. Extraer nombre del archivo de cada imagen\nlet imagenIndex = 0;\nconst imagenes = items.map(item => {\n  const rutaCompleta = item.json.fileName || \"\";\n  return rutaCompleta.split(\"/\").pop(); // Solo el nombre del archivo\n});\n\n// 2. Reemplazar sugerencias IA por imágenes reales\nlet markdownSinImagenes = markdownOriginal.replace(/!\\[IA-(sugerencia|suggestion):([^\\]]+)\\]/g, (_, tipo, textoAlt) => {\n  const nombreImagen = imagenes[imagenIndex] || \"imagen_no_encontrada.png\";\n  imagenIndex++;\n  return `![${textoAlt.trim()}](${rutaBase}${nombreImagen})`;\n});\n\n// 3. Generar fecha actual sin milisegundos y con zona horaria -04:00\nconst ahora = new Date(Date.now() - 4 * 60 * 60 * 1000); // Ajustar a -04:00\nconst isoSinMs = ahora.toISOString().split('.')[0]; // Quitar milisegundos\nconst fechaFormateada = `${isoSinMs}-04:00`;\n\n// 4. Reemplazar 'valor' por la fecha generada\nmarkdownSinImagenes = markdownSinImagenes.replace(/date\\s*=\\s*valor/, `date = '${fechaFormateada}'`);\n\nconst tituloLimpio = tituloSeo.replace(/[\\\\\\/:*?\"<>|]/g, '').trim();\n\nreturn [\n  {\n    json: {\n      markdown: markdownSinImagenes,\n      titulo: tituloLimpio + \".md\"\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -384,
+        1136
+      ],
+      "id": "a5871feb-2afb-4639-bb03-f821d3540d94",
+      "name": "Code2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "129dfd34-a5c1-49d4-914c-bdc9bb974fa1",
+              "name": "markdown",
+              "value": "={{ $json.markdown }}",
+              "type": "string"
+            },
+            {
+              "id": "3f5b25eb-d46f-4021-809a-35f817f5f04c",
+              "name": "titulo",
+              "value": "={{ $json.titulo }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -256,
+        1136
+      ],
+      "id": "a42f56b5-3b36-4471-b50a-c8122cc39616",
+      "name": "Edit Fields3"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4-turbo",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -2112,
+        1712
+      ],
+      "id": "8255014d-a31a-4bbf-af62-584b190f87c8",
+      "name": "OpenRouter Chat Model2",
+      "credentials": {
+        "openRouterApi": {
+          "id": "QETT8kUiuXjnLbpZ",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.mensaje }}",
+        "options": {
+          "systemMessage": "=Tu tarea es generar un título único, atractivo y optimizado para SEO para un artículo del blog losprismas.com, dentro de la categoría \"Salud\".\n\n✅ Requisitos:\n\nEl título debe abordar un tema que ayude a mejorar el bienestar físico o mental de las personas. Puedes enfocarte en:\n\n- Estrategias de autocuidado\n- Prevención de enfermedades comunes\n- Salud emocional y mental\n- Nutrición, sueño, ejercicio, manejo del estrés\n- Hábitos saludables o cambios de estilo de vida\n- Prácticas avaladas por profesionales (psicólogos, médicos, nutricionistas, etc.)\n\n🧠 Enfoque:\n\nEvita sonar como Wikipedia o una IA. El título debe reflejar un tema cercano, útil y con impacto real en la vida cotidiana. Puedes basarte en:\n\n- Dudas comunes de la gente en buscadores o foros\n- Consejos avalados por profesionales de la salud\n- Estudios recientes o recomendaciones respaldadas por instituciones confiables\n\nEjemplos válidos:\n\n- Qué Recomiendan los Psicólogos para Dormir Mejor sin Pastillas\n- Estrategias Respaldadas por la Ciencia para Manejar la Ansiedad Diaria\n- Cómo Afecta el Desorden a Tu Salud Mental (y Qué Hacer al Respecto)\n- Las Rutinas de Mañana Más Efectivas Según Médicos y Nutricionistas\n\n📌 Restricciones:\n\n- El título debe estar en español.\n- Puede estar enfocado a Chile o a un público hispano general, según el contenido.\n- Debe ser claro, específico y con intención de búsqueda real.\n- No incluir fechas (como \"2024\") ni palabras vacías como \"Guía Definitiva\".\n- Evita repetir estructuras de títulos ya usados.\n- Consulta la base de datos PostgreSQL antes de confirmar el título:\n\nSELECT titulo FROM articulos_generados;\n\n🧾 Salida esperada:\nDevuelve solo el nuevo título (sin comillas, sin explicaciones ni adornos)."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -2112,
+        1552
+      ],
+      "id": "0fb6d5f2-b660-4d2f-8a83-53f8b1306b4d",
+      "name": "Generar título SEO único1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.titulo }}",
+        "options": {
+          "systemMessage": "=Tu tarea es redactar un artículo completo, extenso y valioso en formato Markdown para el blog losprismas.com, dentro de la categoría \"Salud\".\n\n✅ Requisitos generales:\nEl artículo debe estar dirigido a lectores de habla hispana interesados en mejorar su salud física o mental. El enfoque debe ser práctico, cercano y aplicable en la vida diaria.\n\nPuedes escribir sobre:\n\n- Salud mental y emocional\n- Autocuidado y manejo del estrés\n- Ejercicio físico y movimiento\n- Nutrición y hábitos alimenticios\n- Sueño, descanso y bienestar general\n- Prevención de enfermedades comunes\n- Prácticas respaldadas por profesionales de la salud\n\n📌 Estilo y tono:\nMezcla un estilo de blog personal con información respaldada. Escribe de forma clara, humana y útil. No suenes como Wikipedia ni como una IA.\n\nSiempre que sea posible, incluye citas o menciones de instituciones o expertos reales (por ejemplo: \"según la Clínica Mayo\", \"como recomienda la psicóloga Ana Pérez\", \"estudios del Instituto del Sueño\", etc.).\n\n✅ Estructura y formato requerido:\n\nEmpieza con un bloque TOML delimitado por +++:\n\n+++\ndate = valor\ndraft = false\ntitle = \"{{ $json.titulo }}\"\n+++\n\n⚠️ Deja el campo date con la palabra valor, exactamente así: date = valor. El flujo automatizado reemplazará este valor.\n\nLuego escribe el cuerpo del artículo, estructurado así:\n\nIntroducción (2–3 párrafos que conecten con el lector, identifiquen un problema común y lo contextualicen).\n\nDesarrollo en 3 a 5 secciones usando ## y ### como subtítulos.\n\nIncluye en el desarrollo:\n\n✅ Listas útiles (con tips, hábitos, señales, etc.)\n\n✅ Pros y contras (cuando apliquen)\n\n✅ Tablas comparativas (en formato Markdown |)\n\n✅ Errores comunes o mitos\n\n✅ Casos prácticos o ejemplos cotidianos\n\n✅ Consejos validados por expertos (cuando sea posible)\n\nConclusión con llamado a la acción claro o reflexión útil.\n\n🖼️ Imágenes sugeridas:\nInserta exactamente 3 sugerencias visuales con esta sintaxis (Markdown):\n\n![IA-sugerencia: descripción concreta de la imagen]\n\nColócalas donde tengan más sentido dentro del contenido (no todas al final).\n\n📏 Extensión esperada:\nEntre 1.600 y 2.000 palabras. No acortes el artículo a menos que lo indique el sistema.\n\n🚫 No incluyas:\n\nEnlaces externos\n\nEncabezados con el mismo texto del título\n\nFrases como “en este artículo hablaremos de…”\n\nFormatos explicativos del propio artículo o su estructura\n\n🧾 Salida esperada:\nUn archivo en Markdown compatible con Hugo, con los metadatos TOML al inicio y el contenido bien desarrollado."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -1712,
+        1552
+      ],
+      "id": "c6bbbe1c-635f-4d4f-8659-1ba02697a64a",
+      "name": "Generar contenido completo en Markdown1"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4-turbo",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -1712,
+        1712
+      ],
+      "id": "d2b314cb-eb9e-4525-8db9-95c2a93ea065",
+      "name": "OpenRouter Chat Model3",
+      "credentials": {
+        "openRouterApi": {
+          "id": "QETT8kUiuXjnLbpZ",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "articulos_generados",
+          "mode": "list",
+          "cachedResultName": "articulos_generados"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "titulo": "={{ $json.output }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "titulo",
+              "displayName": "titulo",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "fecha_creacion",
+              "displayName": "fecha_creacion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -1840,
+        1552
+      ],
+      "id": "d72b1732-f820-450d-a684-42d941fa486e",
+      "name": "Insertar nuevo título1",
+      "credentials": {
+        "postgres": {
+          "id": "25vNRG11YucIzspL",
+          "name": "\tPostgreSQL Prisma"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT titulo FROM articulos_generados;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        -1952,
+        1712
+      ],
+      "id": "7d3e3175-c2ff-4c92-9875-ef6d2e9fa621",
+      "name": "Postgres",
+      "credentials": {
+        "postgres": {
+          "id": "25vNRG11YucIzspL",
+          "name": "\tPostgreSQL Prisma"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "=/mnt/n8n-output/salud/{{ $('Edit Fields7').item.json.titulo }}",
+        "dataPropertyName": "binary.data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        48,
+        1552
+      ],
+      "id": "bba42d4c-5ddc-4940-b7a9-4ec956cfb4df",
+      "name": "Read/Write Files from Disk1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "46f3e3e8-a3a1-4f29-b314-254a74ad6bcb",
+              "name": "data",
+              "value": "={{ $('Generar contenido completo en Markdown1').item.json.output }}",
+              "type": "string"
+            },
+            {
+              "id": "11a78287-8ab6-4cd0-94b6-94f1380ff1ab",
+              "name": "filename",
+              "value": "={{ $('Insertar nuevo título1').item.json.titulo }}.md",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -496,
+        1552
+      ],
+      "id": "ab8b8dd0-53b2-464a-8d99-a09de79dfb57",
+      "name": "Edit Fields4",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "11eac4ad-2d02-4907-bbd9-719f4973e375",
+              "name": "mensaje",
+              "value": "genera un titulo",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2240,
+        1552
+      ],
+      "id": "da015ebd-f6f5-4b3c-ab63-4b20a44786e5",
+      "name": "Edit Fields5"
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "markdown",
+        "binaryPropertyName": "binary.data",
+        "options": {
+          "fileName": "={{ $json.titulo }}"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        -112,
+        1552
+      ],
+      "id": "690b63a7-27d7-4ed5-bde2-94b2ade92158",
+      "name": "Convert to File1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const markdown = $input.first().json.output;\nconst regex = /!\\[IA-sugerencia: (.*?)\\]/g;\nlet matches = [];\nlet m;\nlet count = 1;\n\nwhile ((m = regex.exec(markdown)) !== null) {\n  matches.push({\n    prompt: m[1],\n    marcadorOriginal: m[0],\n    nombreArchivo: `imagen-${count}.png`\n  });\n  count++;\n}\n\nreturn matches.map(imagen => ({ json: imagen }));\n$input.first().json.output"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1056,
+        1552
+      ],
+      "id": "fa44ba62-64fe-4c4b-97d6-80b43de3ce6c",
+      "name": "Code3"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "model": "=dall-e-3",
+        "prompt": "={{ $json.prompt }}",
+        "options": {
+          "returnImageUrls": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -944,
+        1552
+      ],
+      "id": "082d2638-9906-41d8-b1be-ad4e651d29e0",
+      "name": "Generador imagen1",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "credentials": {
+        "openAiApi": {
+          "id": "qRqeWgwWSInHs854",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Generador imagen1').item.json.url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "binary.data"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -800,
+        1552
+      ],
+      "id": "186d62a3-a598-4f12-a5dd-9f615e53ccd9",
+      "name": "Descargar Imagen1"
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "=/mnt/n8n-output/imagenes/imagen{{$itemIndex + $('Code4').item.json.stdout + 1}}.png",
+        "dataPropertyName": "binary.data",
+        "options": {
+          "append": false
+        }
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        -640,
+        1552
+      ],
+      "id": "b2c648ff-fa1d-4e39-9e66-0aee12c13aad",
+      "name": "Read/Write Files from Disk3",
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "jsCode": "const offset = parseInt($node[\"Contar Imágenes Existentes1\"].json[\"stdout\"]) || 0;\n\nreturn items.map((item, index) => {\n  return {\n    json: {\n      ...item.json,\n      nombreImagen: `/mnt/n8n-output/imagenes/imagen${offset + index + 1}.png`\n    },\n    binary: item.binary\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1312,
+        1552
+      ],
+      "id": "639d3f5a-75ee-4a6c-b74e-1cc34521eca1",
+      "name": "Code4"
+    },
+    {
+      "parameters": {
+        "executeOnce": false,
+        "command": "ls /mnt/n8n-output/imagenes | grep -oP 'imagen\\d+\\.png' | wc -l"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        -1440,
+        1552
+      ],
+      "id": "592b442d-9dfa-4657-aa1a-473ecbeb17f7",
+      "name": "Contar Imágenes Existentes1",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "de6a80fd-3c53-4b62-97f2-9f0499dc95be",
+              "name": "output",
+              "value": "={{ $('Generar contenido completo en Markdown1').item.json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1200,
+        1552
+      ],
+      "id": "83ee20db-17df-4c7c-80a9-3918adef461f",
+      "name": "Edit Fields6"
+    },
+    {
+      "parameters": {
+        "jsCode": "const markdownOriginal = $input.first().json.data;\nconst rutaBase = \"https://los-prismas.web.app/img/\";\nconst tituloSeo = $('Generar título SEO único1').first().json.output;\n\n// 1. Extraer nombre del archivo de cada imagen\nlet imagenIndex = 0;\nconst imagenes = items.map(item => {\n  const rutaCompleta = item.json.fileName || \"\";\n  return rutaCompleta.split(\"/\").pop(); // Solo el nombre del archivo\n});\n\n// 2. Reemplazar sugerencias IA por imágenes reales\nlet markdownSinImagenes = markdownOriginal.replace(/!\\[IA-(sugerencia|suggestion):([^\\]]+)\\]/g, (_, tipo, textoAlt) => {\n  const nombreImagen = imagenes[imagenIndex] || \"imagen_no_encontrada.png\";\n  imagenIndex++;\n  return `![${textoAlt.trim()}](${rutaBase}${nombreImagen})`;\n});\n\n// 3. Generar fecha actual sin milisegundos y con zona horaria -04:00\nconst ahora = new Date(Date.now() - 4 * 60 * 60 * 1000); // Ajustar a -04:00\nconst isoSinMs = ahora.toISOString().split('.')[0]; // Quitar milisegundos\nconst fechaFormateada = `${isoSinMs}-04:00`;\n\n// 4. Reemplazar 'valor' por la fecha generada\nmarkdownSinImagenes = markdownSinImagenes.replace(/date\\s*=\\s*valor/, `date = '${fechaFormateada}'`);\n\nconst tituloLimpio = tituloSeo.replace(/[\\\\\\/:*?\"<>|]/g, '').trim();\n\nreturn [\n  {\n    json: {\n      markdown: markdownSinImagenes,\n      titulo: tituloLimpio + \".md\"\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -384,
+        1552
+      ],
+      "id": "2b537f04-a16e-41b7-9ccd-e73fceb119bf",
+      "name": "Code5"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "129dfd34-a5c1-49d4-914c-bdc9bb974fa1",
+              "name": "markdown",
+              "value": "={{ $json.markdown }}",
+              "type": "string"
+            },
+            {
+              "id": "3f5b25eb-d46f-4021-809a-35f817f5f04c",
+              "name": "titulo",
+              "value": "={{ $json.titulo }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -256,
+        1552
+      ],
+      "id": "d8d3db57-09a6-43d3-9c39-4951170e9477",
+      "name": "Edit Fields7"
+    },
+    {
+      "parameters": {
+        "content": "## HERRAMIENTAS ESENCIALES",
+        "height": 400,
+        "width": 2700
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2416,
+        1040
+      ],
+      "id": "81de9edb-c8fb-4dc0-92e4-cdf7063636a4",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## SALUD",
+        "height": 400,
+        "width": 2700,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2416,
+        1440
+      ],
+      "id": "f02faf7c-5005-48b1-a112-e15565951c91",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4-turbo",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -2112,
+        2112
+      ],
+      "id": "3b2462a2-c1ec-40ee-a4b5-d17818256741",
+      "name": "OpenRouter Chat Model4",
+      "credentials": {
+        "openRouterApi": {
+          "id": "QETT8kUiuXjnLbpZ",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 1,
+              "triggerAtMinute": 6
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -2352,
+        1952
+      ],
+      "id": "234d01fa-418b-407d-9fd5-a1099c4db592",
+      "name": "Schedule Trigger2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.mensaje }}",
+        "options": {
+          "systemMessage": "=Tu tarea es generar un título único, atractivo y optimizado para SEO para un artículo del blog losprismas.com, dentro de la categoría \"Productividad\".\n\n✅ Temas posibles:\n- Gestión del tiempo y hábitos productivos\n- Organización personal y laboral\n- Técnicas para vencer la procrastinación\n- Herramientas (analógicas o digitales) para trabajar mejor\n- Balance vida-trabajo y bienestar laboral\n- Inteligencia artificial aplicada a la productividad\n- Rutinas y hábitos respaldados por estudios o expertos\n\n📌 El título debe:\n- Estar en español\n- Ser claro, específico y con intención de búsqueda real\n- Estar optimizado para SEO (formato long-tail)\n- Evitar fechas (no pongas años como “2024”)\n- Evitar títulos genéricos o similares a otros\n- Puede estar enfocado a Chile o a un público hispanohablante general (elige lo más apropiado)\n- Incluir números, preguntas o promesas concretas puede ayudar\n\n📊 Validación:\nAntes de confirmar el título, consulta la base de datos PostgreSQL para asegurarte de que no ha sido usado:\n\nSELECT titulo FROM articulos_generados;\n\n🧾 Salida esperada:\nDevuelve solo el nuevo título (sin comillas, sin adornos, sin explicaciones)."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -2112,
+        1952
+      ],
+      "id": "caef0dc6-bb57-4149-8bc8-ab9b3e28c884",
+      "name": "Generar título SEO único2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.titulo }}",
+        "options": {
+          "systemMessage": "=Tu tarea es redactar un artículo completo, profundo y útil en formato Markdown para el blog losprismas.com, dentro de la categoría \"Productividad\".\n\n✅ Objetivo:\nAyuda a los lectores a mejorar su desempeño personal o profesional a través de métodos, hábitos y herramientas prácticas de productividad.\n\n✅ Temas posibles:\n- Gestión del tiempo, tareas y energía\n- Técnicas como Pomodoro, Eisenhower, 80/20, GTD, etc.\n- Herramientas digitales o analógicas para organizarse\n- Rutinas efectivas para distintos tipos de personas\n- Errores comunes en la productividad\n- Casos reales, estudios o referencias a expertos (ej. Cal Newport, James Clear, etc.)\n\n📌 Estilo y tono:\nMezcla un estilo de blog personal con conocimiento respaldado. Sé cercano, humano, realista.  \nNo suenes como Wikipedia ni como una IA.\n\nSiempre que puedas, incluye menciones a autores, estudios o libros conocidos en productividad (ej.: “como sugiere la autora Laura Vanderkam”, o “según el método GTD creado por David Allen”).\n\n✅ Estructura esperada:\n\nComienza con un bloque TOML como encabezado:\n\n+++\ndate = valor\ndraft = false\ntitle = \"{{ $json.titulo }}\"\n+++\n\n⚠️ Deja el campo date con la palabra valor exactamente así: date = valor. El sistema lo completará automáticamente.\n\nLuego desarrolla el contenido así:\n\nIntroducción (2–3 párrafos que conecten con el lector y contextualicen el problema o reto de productividad).\n\nDesarrollo en 3 a 5 secciones (usa ## y ###), incluyendo:\n\n✅ Listas con recomendaciones o pasos\n\n✅ Comparaciones o tablas (formato Markdown |)\n\n✅ Pros y contras de métodos o herramientas\n\n✅ Errores comunes o mitos\n\n✅ Ejemplos aplicados a situaciones reales (trabajo remoto, estudiantes, freelance, etc.)\n\n✅ Consejos de expertos o referencias reales\n\nConclusión con llamado a la acción práctico o reflexivo.\n\n🖼️ Imágenes sugeridas:\nIncluye 3 sugerencias de imágenes visuales, en los lugares donde aporten contexto. Usa esta sintaxis:\n\n![IA-sugerencia: descripción visual clara y concreta]\n\n📏 Extensión esperada:\nEntre 1.600 y 2.000 palabras. No reduzcas el contenido sin indicación del sistema.\n\n🚫 No incluyas:\n\nEnlaces externos\n\nFrases como “en este artículo veremos…”\n\nEncabezados repetidos con el título\n\nExplicaciones sobre el formato Markdown\n\n🧾 Salida esperada:\nUn archivo en formato Markdown compatible con Hugo, con metadatos TOML correctos y el contenido estructurado."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -1712,
+        1952
+      ],
+      "id": "f91f37ff-0cb8-4beb-a363-6f2584654239",
+      "name": "Generar contenido completo en Markdown2"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4-turbo",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -1712,
+        2112
+      ],
+      "id": "c15d0c6f-0809-4348-a9ce-662796d460c4",
+      "name": "OpenRouter Chat Model5",
+      "credentials": {
+        "openRouterApi": {
+          "id": "QETT8kUiuXjnLbpZ",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "articulos_generados",
+          "mode": "list",
+          "cachedResultName": "articulos_generados"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "titulo": "={{ $json.output }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "titulo",
+              "displayName": "titulo",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "fecha_creacion",
+              "displayName": "fecha_creacion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -1840,
+        1952
+      ],
+      "id": "9b40cd4f-cf7e-4d4f-8e65-7e7197744bdc",
+      "name": "Insertar nuevo título2",
+      "credentials": {
+        "postgres": {
+          "id": "25vNRG11YucIzspL",
+          "name": "\tPostgreSQL Prisma"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT titulo FROM articulos_generados;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        -1952,
+        2112
+      ],
+      "id": "e1f6f464-5a15-45c3-a2f4-26700161c65f",
+      "name": "Postgres2",
+      "credentials": {
+        "postgres": {
+          "id": "25vNRG11YucIzspL",
+          "name": "\tPostgreSQL Prisma"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "=/mnt/n8n-output/productividad/{{ $('Edit Fields11').item.json.titulo }}",
+        "dataPropertyName": "binary.data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        48,
+        1952
+      ],
+      "id": "a07fe420-19c1-4f25-a114-7bf619549e1a",
+      "name": "Read/Write Files from Disk4"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "46f3e3e8-a3a1-4f29-b314-254a74ad6bcb",
+              "name": "data",
+              "value": "={{ $('Generar contenido completo en Markdown2').item.json.output }}",
+              "type": "string"
+            },
+            {
+              "id": "11a78287-8ab6-4cd0-94b6-94f1380ff1ab",
+              "name": "filename",
+              "value": "={{ $('Insertar nuevo título2').item.json.titulo }}.md",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -496,
+        1952
+      ],
+      "id": "d6cf977d-e1e9-4916-9453-bf6073dc06e4",
+      "name": "Edit Fields8",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "11eac4ad-2d02-4907-bbd9-719f4973e375",
+              "name": "mensaje",
+              "value": "genera un titulo",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2240,
+        1952
+      ],
+      "id": "75f78e75-cadb-448c-95b5-624f8ec078d8",
+      "name": "Edit Fields9"
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "markdown",
+        "binaryPropertyName": "binary.data",
+        "options": {
+          "fileName": "={{ $json.titulo }}"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        -112,
+        1952
+      ],
+      "id": "59e304be-2383-4e1b-8eb6-ef353861500a",
+      "name": "Convert to File2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const markdown = $input.first().json.output;\nconst regex = /!\\[IA-sugerencia: (.*?)\\]/g;\nlet matches = [];\nlet m;\nlet count = 1;\n\nwhile ((m = regex.exec(markdown)) !== null) {\n  matches.push({\n    prompt: m[1],\n    marcadorOriginal: m[0],\n    nombreArchivo: `imagen-${count}.png`\n  });\n  count++;\n}\n\nreturn matches.map(imagen => ({ json: imagen }));\n$input.first().json.output"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1056,
+        1952
+      ],
+      "id": "06bf0b99-a9fd-400c-ae3b-bf284349c495",
+      "name": "Code6"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "model": "=dall-e-3",
+        "prompt": "={{ $json.prompt }}",
+        "options": {
+          "returnImageUrls": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -944,
+        1952
+      ],
+      "id": "d215e750-3b1c-4c0a-9388-687aabb2d391",
+      "name": "Generador imagen2",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "credentials": {
+        "openAiApi": {
+          "id": "qRqeWgwWSInHs854",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Generador imagen2').item.json.url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "binary.data"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -800,
+        1952
+      ],
+      "id": "082cc45e-0e56-428b-8c65-95356da66ea9",
+      "name": "Descargar Imagen2"
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "=/mnt/n8n-output/imagenes/imagen{{$itemIndex + $('Code7').item.json.stdout + 1}}.png",
+        "dataPropertyName": "binary.data",
+        "options": {
+          "append": false
+        }
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        -640,
+        1952
+      ],
+      "id": "2a8b1ae4-b531-4d0e-a350-de3dd502a892",
+      "name": "Read/Write Files from Disk5",
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "jsCode": "const offset = parseInt($node[\"Contar Imágenes Existentes2\"].json[\"stdout\"]) || 0;\n\nreturn items.map((item, index) => {\n  return {\n    json: {\n      ...item.json,\n      nombreImagen: `/mnt/n8n-output/imagenes/imagen${offset + index + 1}.png`\n    },\n    binary: item.binary\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1312,
+        1952
+      ],
+      "id": "17bf7c98-93b5-4e80-8d17-5cc23f078711",
+      "name": "Code7"
+    },
+    {
+      "parameters": {
+        "executeOnce": false,
+        "command": "ls /mnt/n8n-output/imagenes | grep -oP 'imagen\\d+\\.png' | wc -l"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        -1440,
+        1952
+      ],
+      "id": "eeea573a-b656-4aba-9aef-1def4d298998",
+      "name": "Contar Imágenes Existentes2",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "de6a80fd-3c53-4b62-97f2-9f0499dc95be",
+              "name": "output",
+              "value": "={{ $('Generar contenido completo en Markdown2').item.json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1200,
+        1952
+      ],
+      "id": "3b0aced7-bf61-46a6-b767-bed872615aeb",
+      "name": "Edit Fields10"
+    },
+    {
+      "parameters": {
+        "jsCode": "const markdownOriginal = $input.first().json.data;\nconst rutaBase = \"https://los-prismas.web.app/img/\";\nconst tituloSeo = $('Generar título SEO único2').first().json.output;\n\n// 1. Extraer nombre del archivo de cada imagen\nlet imagenIndex = 0;\nconst imagenes = items.map(item => {\n  const rutaCompleta = item.json.fileName || \"\";\n  return rutaCompleta.split(\"/\").pop(); // Solo el nombre del archivo\n});\n\n// 2. Reemplazar sugerencias IA por imágenes reales\nlet markdownSinImagenes = markdownOriginal.replace(/!\\[IA-(sugerencia|suggestion):([^\\]]+)\\]/g, (_, tipo, textoAlt) => {\n  const nombreImagen = imagenes[imagenIndex] || \"imagen_no_encontrada.png\";\n  imagenIndex++;\n  return `![${textoAlt.trim()}](${rutaBase}${nombreImagen})`;\n});\n\n// 3. Generar fecha actual sin milisegundos y con zona horaria -04:00\nconst ahora = new Date(Date.now() - 4 * 60 * 60 * 1000); // Ajustar a -04:00\nconst isoSinMs = ahora.toISOString().split('.')[0]; // Quitar milisegundos\nconst fechaFormateada = `${isoSinMs}-04:00`;\n\n// 4. Reemplazar 'valor' por la fecha generada\nmarkdownSinImagenes = markdownSinImagenes.replace(/date\\s*=\\s*valor/, `date = '${fechaFormateada}'`);\n\nconst tituloLimpio = tituloSeo.replace(/[\\\\\\/:*?\"<>|]/g, '').trim();\n\nreturn [\n  {\n    json: {\n      markdown: markdownSinImagenes,\n      titulo: tituloLimpio + \".md\"\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -384,
+        1952
+      ],
+      "id": "0ffea4d1-a493-4e89-af18-80648252f80b",
+      "name": "Code8"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "129dfd34-a5c1-49d4-914c-bdc9bb974fa1",
+              "name": "markdown",
+              "value": "={{ $json.markdown }}",
+              "type": "string"
+            },
+            {
+              "id": "3f5b25eb-d46f-4021-809a-35f817f5f04c",
+              "name": "titulo",
+              "value": "={{ $json.titulo }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -256,
+        1952
+      ],
+      "id": "849dd137-a19f-49b5-9d66-451487cf7fb7",
+      "name": "Edit Fields11"
+    },
+    {
+      "parameters": {
+        "content": "## PRODUCTIVIDAD",
+        "height": 400,
+        "width": 2700,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2416,
+        1840
+      ],
+      "id": "bd81b830-d49a-4f7d-aa64-f3caa7ed9b9d",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4-turbo",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        592,
+        1312
+      ],
+      "id": "3637dca1-5420-4539-bb7c-4ab04037bdd3",
+      "name": "OpenRouter Chat Model6",
+      "credentials": {
+        "openRouterApi": {
+          "id": "QETT8kUiuXjnLbpZ",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 1,
+              "triggerAtMinute": 9
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        352,
+        1152
+      ],
+      "id": "972b692f-f35d-4be1-80c9-a7551c233084",
+      "name": "Schedule Trigger3"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.mensaje }}",
+        "options": {
+          "systemMessage": "=Eres un estratega de contenido SEO y planificador editorial para un blog que ayuda a personas hispanohablantes a entender y mejorar sus finanzas personales.\n\nTu tarea es generar un **título único, atractivo y optimizado para SEO** para un artículo de la categoría \"Finanzas\", en **español**.\n\n---\n\n📌 Temas posibles:\n- Finanzas personales o familiares\n- Ahorro, inversión o educación financiera\n- Control de gastos, deudas, tarjetas de crédito\n- Aplicaciones o herramientas útiles\n- Errores comunes y cómo evitarlos\n- Contexto financiero en Latinoamérica\n- Comparaciones culturales sobre el dinero\n\n---\n\n📐 Requisitos del título:\n- En español\n- Máximo 75 caracteres\n- Claro, natural, con intención de búsqueda\n- Puede ser una pregunta, usar cifras, o plantear un problema\n- Evitar comillas, mayúsculas innecesarias y signos como “!” o emojis\n\n---\n\n🔎 Verificación (IMPORTANTE):\nConsulta esta tabla antes de confirmar:\n\nSELECT titulo FROM articulos_generados;\n\nSi el título es igual o muy parecido a alguno ya existente, genera uno nuevo.\n\n📤 Salida esperada:\nDevuelve solo el nuevo título como texto plano\n❌ Sin comillas\n❌ Sin adornos ni explicaciones"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        592,
+        1152
+      ],
+      "id": "bd2bf0d8-2327-4a83-8248-dc5ea0bc3a75",
+      "name": "Generar título SEO único3"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.titulo }}",
+        "options": {
+          "systemMessage": "=Eres un redactor especializado en educación financiera y tu trabajo es ayudar a personas hispanohablantes, especialmente en Latinoamérica, a mejorar su relación con el dinero.\n\nTu tarea es escribir un artículo completo en español basado en el siguiente título:\n\n{{ $json.titulo }}\n\n📚 Requisitos del artículo:\n\nIdioma: Español\n\nLongitud: Entre 3,000 y 3,800 palabras\n\nEstilo: Claro, cercano, educativo y humano\n\nPúblico: Personas que desean aprender sobre finanzas personales sin tecnicismos\n\n🎯 Posibles enfoques (elige uno relevante al tema):\n\nGuía práctica paso a paso\n\nExplicación de errores comunes\n\nRecomendación de una app o herramienta\n\nAnálisis de un caso real o tendencia cultural (Chile, México, Argentina…)\n\nComparativa de estrategias de ahorro, deuda, inversión o consumo\n\n🧱 Estructura recomendada:\n\nIntroducción atractiva y breve (no repitas el título)\n\nDe 4 a 6 secciones principales (usa encabezados H2)\n\nListas, ejemplos, pasos o historias reales si aplican\n\nConclusión útil con consejo práctico o reflexión\n\n📊 Recursos adicionales:\n\nIncluye al menos una cita o referencia (libro, autor, medio, estudio, profesional, etc.)\n\nSugiere 3 a 4 imágenes IA con este formato exacto:\n\n![IA-sugerencia: descripción visual clara en español]\n\nSi aparecen personas en la imagen, deben tener rasgos latinos.\n\n🗂️ Encabezado TOML (NO editar la palabra \"valor\"):\n\n+++\ntitle = \"{{ $json.titulo }}\"\ndescription = \"[Resumen breve atractivo del artículo]\"\ndate = valor\ncategories = [\"Finanzas\"]\n+++\n\n📤 Instrucciones finales:\n\nDevuelve el texto en Markdown (sin bloques de código)\n\nNo repitas el título en el cuerpo del artículo\n\nDevuelve solo el artículo como texto plano (sin explicaciones)"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        992,
+        1152
+      ],
+      "id": "470cc7db-2a33-4b60-aa1a-65e83f6f4fb1",
+      "name": "Generar contenido completo en Markdown3"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4-turbo",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        992,
+        1312
+      ],
+      "id": "ed945b3a-c2a2-47f1-925e-efa83bcb2427",
+      "name": "OpenRouter Chat Model7",
+      "credentials": {
+        "openRouterApi": {
+          "id": "QETT8kUiuXjnLbpZ",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "articulos_generados",
+          "mode": "list",
+          "cachedResultName": "articulos_generados"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "titulo": "={{ $json.output }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "titulo",
+              "displayName": "titulo",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "fecha_creacion",
+              "displayName": "fecha_creacion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        864,
+        1152
+      ],
+      "id": "fc521c4d-1655-4522-9a0a-9e8fa46995dd",
+      "name": "Insertar nuevo título3",
+      "credentials": {
+        "postgres": {
+          "id": "25vNRG11YucIzspL",
+          "name": "\tPostgreSQL Prisma"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT titulo FROM articulos_generados;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        752,
+        1312
+      ],
+      "id": "4ac4eb2f-8be8-4050-ae9c-e194e72a4d45",
+      "name": "Postgres3",
+      "credentials": {
+        "postgres": {
+          "id": "25vNRG11YucIzspL",
+          "name": "\tPostgreSQL Prisma"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "=/mnt/n8n-output/finanzas/{{ $('Edit Fields15').item.json.titulo }}",
+        "dataPropertyName": "binary.data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        2752,
+        1152
+      ],
+      "id": "46c2a0d3-05d6-461b-bbb3-7740957c730a",
+      "name": "Read/Write Files from Disk6"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "46f3e3e8-a3a1-4f29-b314-254a74ad6bcb",
+              "name": "data",
+              "value": "={{ $('Generar contenido completo en Markdown3').item.json.output }}",
+              "type": "string"
+            },
+            {
+              "id": "11a78287-8ab6-4cd0-94b6-94f1380ff1ab",
+              "name": "filename",
+              "value": "={{ $('Insertar nuevo título3').item.json.titulo }}.md",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2208,
+        1152
+      ],
+      "id": "5d3235a5-bbf8-4ca9-87a6-3114117a1eaa",
+      "name": "Edit Fields12",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "11eac4ad-2d02-4907-bbd9-719f4973e375",
+              "name": "mensaje",
+              "value": "genera un titulo",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        464,
+        1152
+      ],
+      "id": "4e860abb-563f-4e69-a668-d6fc8051a2e2",
+      "name": "Edit Fields13"
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "markdown",
+        "binaryPropertyName": "binary.data",
+        "options": {
+          "fileName": "={{ $json.titulo }}"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        2592,
+        1152
+      ],
+      "id": "ffcca4a7-eaad-4add-8d89-1ea0315c834f",
+      "name": "Convert to File3"
+    },
+    {
+      "parameters": {
+        "jsCode": "const markdown = $input.first().json.output;\nconst regex = /!\\[IA-sugerencia: (.*?)\\]/g;\nlet matches = [];\nlet m;\nlet count = 1;\n\nwhile ((m = regex.exec(markdown)) !== null) {\n  matches.push({\n    prompt: m[1],\n    marcadorOriginal: m[0],\n    nombreArchivo: `imagen-${count}.png`\n  });\n  count++;\n}\n\nreturn matches.map(imagen => ({ json: imagen }));\n$input.first().json.output"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1648,
+        1152
+      ],
+      "id": "d3faecae-97a4-4d36-8eaa-05ce2809e90a",
+      "name": "Code9"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "model": "=dall-e-3",
+        "prompt": "={{ $json.prompt }}",
+        "options": {
+          "returnImageUrls": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        1760,
+        1152
+      ],
+      "id": "16f56381-e9c0-484c-a2a2-e749c9924f10",
+      "name": "Generador imagen3",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "credentials": {
+        "openAiApi": {
+          "id": "qRqeWgwWSInHs854",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Generador imagen3').item.json.url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "binary.data"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1904,
+        1152
+      ],
+      "id": "8c2504c0-6d98-4589-a1d1-c09ee3143420",
+      "name": "Descargar Imagen3"
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "=/mnt/n8n-output/imagenes/imagen{{$itemIndex + $('Code10').item.json.stdout + 1}}.png",
+        "dataPropertyName": "binary.data",
+        "options": {
+          "append": false
+        }
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        2064,
+        1152
+      ],
+      "id": "692760bd-242f-40ea-a189-89af40532c20",
+      "name": "Read/Write Files from Disk7",
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "jsCode": "const offset = parseInt($node[\"Contar Imágenes Existentes3\"].json[\"stdout\"]) || 0;\n\nreturn items.map((item, index) => {\n  return {\n    json: {\n      ...item.json,\n      nombreImagen: `/mnt/n8n-output/imagenes/imagen${offset + index + 1}.png`\n    },\n    binary: item.binary\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1392,
+        1152
+      ],
+      "id": "a90abef3-c724-4e7d-9d04-b429c3c12e7f",
+      "name": "Code10"
+    },
+    {
+      "parameters": {
+        "executeOnce": false,
+        "command": "ls /mnt/n8n-output/imagenes | grep -oP 'imagen\\d+\\.png' | wc -l"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1264,
+        1152
+      ],
+      "id": "c89f4d4c-7663-44df-bda6-82be6c5010bf",
+      "name": "Contar Imágenes Existentes3",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "de6a80fd-3c53-4b62-97f2-9f0499dc95be",
+              "name": "output",
+              "value": "={{ $('Generar contenido completo en Markdown3').item.json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1504,
+        1152
+      ],
+      "id": "84021d5a-e0a9-4d4e-83e9-6135c564dd35",
+      "name": "Edit Fields14"
+    },
+    {
+      "parameters": {
+        "jsCode": "const markdownOriginal = $input.first().json.data;\nconst rutaBase = \"https://los-prismas.web.app/img/\";\nconst tituloSeo = $('Generar título SEO único3').first().json.output;\n\n// 1. Extraer nombre del archivo de cada imagen\nlet imagenIndex = 0;\nconst imagenes = items.map(item => {\n  const rutaCompleta = item.json.fileName || \"\";\n  return rutaCompleta.split(\"/\").pop(); // Solo el nombre del archivo\n});\n\n// 2. Reemplazar sugerencias IA por imágenes reales\nlet markdownSinImagenes = markdownOriginal.replace(/!\\[IA-(sugerencia|suggestion):([^\\]]+)\\]/g, (_, tipo, textoAlt) => {\n  const nombreImagen = imagenes[imagenIndex] || \"imagen_no_encontrada.png\";\n  imagenIndex++;\n  return `![${textoAlt.trim()}](${rutaBase}${nombreImagen})`;\n});\n\n// 3. Generar fecha actual sin milisegundos y con zona horaria -04:00\nconst ahora = new Date(Date.now() - 4 * 60 * 60 * 1000); // Ajustar a -04:00\nconst isoSinMs = ahora.toISOString().split('.')[0]; // Quitar milisegundos\nconst fechaFormateada = `${isoSinMs}-04:00`;\n\n// 4. Reemplazar 'valor' por la fecha generada\nmarkdownSinImagenes = markdownSinImagenes.replace(/date\\s*=\\s*valor/, `date = '${fechaFormateada}'`);\n\nconst tituloLimpio = tituloSeo.replace(/[\\\\\\/:*?\"<>|]/g, '').trim();\n\nreturn [\n  {\n    json: {\n      markdown: markdownSinImagenes,\n      titulo: tituloLimpio + \".md\"\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2320,
+        1152
+      ],
+      "id": "4f727ad9-8b60-4492-93f1-21c219c7aedf",
+      "name": "Code11"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "129dfd34-a5c1-49d4-914c-bdc9bb974fa1",
+              "name": "markdown",
+              "value": "={{ $json.markdown }}",
+              "type": "string"
+            },
+            {
+              "id": "3f5b25eb-d46f-4021-809a-35f817f5f04c",
+              "name": "titulo",
+              "value": "={{ $json.titulo }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2448,
+        1152
+      ],
+      "id": "e73eee84-6d79-4f29-af9d-927b8467e28a",
+      "name": "Edit Fields15"
+    },
+    {
+      "parameters": {
+        "content": "## FINANZAS",
+        "height": 400,
+        "width": 2700,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        288,
+        1040
+      ],
+      "id": "cb17120a-e474-4ffa-b494-a101c0017940",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 1,
+              "triggerAtMinute": 3
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -2352,
+        1552
+      ],
+      "id": "fd32f8af-2274-4104-b810-10bab24471d7",
+      "name": "Schedule Trigger4"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4-turbo",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        592,
+        1712
+      ],
+      "id": "1262db2c-beea-40d4-a54e-dc159c54ee19",
+      "name": "OpenRouter Chat Model8",
+      "credentials": {
+        "openRouterApi": {
+          "id": "QETT8kUiuXjnLbpZ",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 1,
+              "triggerAtMinute": 12
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        352,
+        1552
+      ],
+      "id": "4478242c-9279-4813-be7e-47f11da13aa9",
+      "name": "Schedule Trigger5"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.mensaje }}",
+        "options": {
+          "systemMessage": "=You are a senior editorial lead for a global blog focused on social, cultural, and economic trends.\n\nGenerate **one unique, thought-provoking article title** in English for the category **Global Insights**.  \n\n---\n\n📌 Thematic Guidelines:\n\nThe title must relate to **one** of the following:\n\n- A global cultural or behavioral shift  \n- Psychological or societal challenges (e.g., loneliness, hustle culture, digital overwhelm)  \n- Trends in minimalism, slow living, or rethinking success  \n- Globalization vs. localization  \n- Emotional, economic, or existential dilemmas of modern life  \n- Perspectives on identity, meaning, and well-being in the 21st century\n\n---\n\n📐 SEO + Style Criteria:\n\n- Max **70 characters**\n- Must be clear, human-readable, and **evocative**\n- Avoid technical terms, jargon, or corporate tone\n- Use a **hook** or emotional tension (e.g., contrast, irony, mystery, conflict)\n- Don’t include quotation marks, punctuation like “!”, or emojis\n- Must **not** repeat any title in the database\n\n---\n\n🔎 Duplication Check:\n\nBefore returning the final title, query the PostgreSQL database:\n\n\nSELECT titulo FROM articulos_generados;\n\nIf the generated title is too similar to an existing one, regenerate.\n\n📤 Output:\n- Return only the final title as plain text\n- Do not include:\n  - Quotes (\" or ')\n  - Code blocks (like ``` or text)\n  - Headings or explanations\n  - Any extra formatting or characters\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        592,
+        1552
+      ],
+      "id": "59e6d86b-ba7e-48d2-9949-2b73b3399f05",
+      "name": "Generar título SEO único4"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.titulo }}",
+        "options": {
+          "systemMessage": "=You are a senior content writer and editorial essayist for a blog focused on cultural, societal, and economic reflections from around the world.\n\nWrite a deep, well-structured article in English based on the following title:\n\n{{ $json.titulo }}\n\n📚 Article Focus:\n\nThe article must present a thoughtful and critical perspective on the theme, integrating:\n\nSocietal or cultural shifts\n\nHuman psychology and behavior\n\nGlobal trends or contrasts between countries\n\nPhilosophical questions or long-term implications\n\nUse storytelling, analogies, and real-world observations.\n\n✍️ Style and Tone:\n\nLanguage: English\n\nLength: 3,500 to 4,000 words\n\nStyle: Editorial + Reflective + Human\n\nAvoid clickbait or corporate tone\n\nKeep it immersive but structured\n\n🔧 Structure:\n\nIntro (short, no heading)\n\nBody with 4–6 clear H2 sections (no H3 unless needed)\n\nInclude at least 1 expert quote, statistic, or source\n\nEnd with a reflective or open-ended conclusion\n\n🖼️ Image Suggestions:\n\nInclude 3 to 4 AI-generated image prompts, using the following format exactly:\n\n![IA-suggestion: description in English]\n\nUse prompts that match the emotional tone and context of the article.\n\n🗂️ Front Matter (DO NOT MODIFY valor):\n\nStart with this TOML block:\n\n+++\ntitle = \"{{ $json.titulo }}\"\ndescription = \"[Concise and introspective one-sentence summary]\"\ndate = valor\ncategories = [\"Global\", \"Insights\"]\n+++\n\n📤 Output Instructions:\n\nUse valid Markdown\n\nDo not include code blocks or triple backticks\n\nDo not repeat the title inside the content\n\nReturn only the final article as plain text"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        992,
+        1552
+      ],
+      "id": "8c597287-21a0-4cf2-a72c-3640eaf9e600",
+      "name": "Generar contenido completo en Markdown4"
+    },
+    {
+      "parameters": {
+        "model": "anthropic/claude-3-opus",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        992,
+        1712
+      ],
+      "id": "de2f0420-7e85-4aaa-b2cd-4aa267a690dc",
+      "name": "OpenRouter Chat Model9",
+      "credentials": {
+        "openRouterApi": {
+          "id": "QETT8kUiuXjnLbpZ",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "articulos_generados",
+          "mode": "list",
+          "cachedResultName": "articulos_generados"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "titulo": "={{ $json.output }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "titulo",
+              "displayName": "titulo",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "fecha_creacion",
+              "displayName": "fecha_creacion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        864,
+        1552
+      ],
+      "id": "b1c51257-2581-4e4f-b7fc-2c9fc9b56159",
+      "name": "Insertar nuevo título4",
+      "credentials": {
+        "postgres": {
+          "id": "25vNRG11YucIzspL",
+          "name": "\tPostgreSQL Prisma"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT titulo FROM articulos_generados;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        784,
+        1712
+      ],
+      "id": "4dee0653-66c6-44d3-8293-80c3e01e01c7",
+      "name": "Postgres4",
+      "credentials": {
+        "postgres": {
+          "id": "25vNRG11YucIzspL",
+          "name": "\tPostgreSQL Prisma"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "=/mnt/n8n-output/global/{{ $('Edit Fields19').item.json.titulo }}",
+        "dataPropertyName": "binary.data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        2752,
+        1552
+      ],
+      "id": "6f0984f3-abe2-4ef8-af64-20e9f1b68e81",
+      "name": "Read/Write Files from Disk8"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "46f3e3e8-a3a1-4f29-b314-254a74ad6bcb",
+              "name": "data",
+              "value": "={{ $('Generar contenido completo en Markdown4').item.json.output }}",
+              "type": "string"
+            },
+            {
+              "id": "11a78287-8ab6-4cd0-94b6-94f1380ff1ab",
+              "name": "filename",
+              "value": "={{ $('Insertar nuevo título4').item.json.titulo }}.md",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2208,
+        1552
+      ],
+      "id": "e77b53ff-0340-4014-b845-8441123907f1",
+      "name": "Edit Fields16",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "11eac4ad-2d02-4907-bbd9-719f4973e375",
+              "name": "mensaje",
+              "value": "genera un titulo",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        464,
+        1552
+      ],
+      "id": "2407f7d6-c5d2-4ef8-9490-dcad0d3a5178",
+      "name": "Edit Fields17"
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "markdown",
+        "binaryPropertyName": "binary.data",
+        "options": {
+          "fileName": "={{ $json.titulo }}"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        2592,
+        1552
+      ],
+      "id": "4d59301c-06f4-4d39-9d19-28263afdf126",
+      "name": "Convert to File4"
+    },
+    {
+      "parameters": {
+        "jsCode": "const markdown = $input.first().json.output;\nconst regex = /!\\[IA-suggestion: (.*?)\\]/g;\nlet matches = [];\nlet m;\nlet count = 1;\n\nwhile ((m = regex.exec(markdown)) !== null) {\n  matches.push({\n    prompt: m[1],\n    marcadorOriginal: m[0],\n    nombreArchivo: `imagen-${count}.png`\n  });\n  count++;\n}\n\nreturn matches.map(imagen => ({ json: imagen }));\n$input.first().json.output"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1648,
+        1552
+      ],
+      "id": "613de961-d045-4376-a18c-d4042afe29a0",
+      "name": "Code12"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "model": "=dall-e-3",
+        "prompt": "={{ $json.prompt }}",
+        "options": {
+          "returnImageUrls": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        1760,
+        1552
+      ],
+      "id": "86f862cd-8979-42f3-8349-511e85057c6b",
+      "name": "Generador imagen4",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "credentials": {
+        "openAiApi": {
+          "id": "qRqeWgwWSInHs854",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Generador imagen4').item.json.url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "binary.data"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1904,
+        1552
+      ],
+      "id": "dc96ff0c-a98c-4d16-9325-bfe8872a4770",
+      "name": "Descargar Imagen4"
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "=/mnt/n8n-output/imagenes/imagen{{$itemIndex + $('Code13').item.json.stdout + 1}}.png",
+        "dataPropertyName": "binary.data",
+        "options": {
+          "append": false
+        }
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        2064,
+        1552
+      ],
+      "id": "9c2d10db-95e7-4b5b-a942-8de7ae3190ab",
+      "name": "Read/Write Files from Disk9",
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "jsCode": "const offset = parseInt($node[\"Contar Imágenes Existentes4\"].json[\"stdout\"]) || 0;\n\nreturn items.map((item, index) => {\n  return {\n    json: {\n      ...item.json,\n      nombreImagen: `/mnt/n8n-output/imagenes/imagen${offset + index + 1}.png`\n    },\n    binary: item.binary\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1392,
+        1552
+      ],
+      "id": "498ee6bf-4154-4436-a702-f33c67800776",
+      "name": "Code13"
+    },
+    {
+      "parameters": {
+        "executeOnce": false,
+        "command": "ls /mnt/n8n-output/imagenes | grep -oP 'imagen\\d+\\.png' | wc -l"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1264,
+        1552
+      ],
+      "id": "39e22335-3a51-46bf-9c11-acba18b84443",
+      "name": "Contar Imágenes Existentes4",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "de6a80fd-3c53-4b62-97f2-9f0499dc95be",
+              "name": "output",
+              "value": "={{ $('Generar contenido completo en Markdown4').item.json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1504,
+        1552
+      ],
+      "id": "0fefdb3c-bc0e-4274-828d-b46859703c5b",
+      "name": "Edit Fields18"
+    },
+    {
+      "parameters": {
+        "jsCode": "const markdownOriginal = $input.first().json.data;\nconst rutaBase = \"https://los-prismas.web.app/img/\";\nconst tituloSeo = $('Generar título SEO único4').first().json.output;\n\n// 1. Extraer nombre del archivo de cada imagen\nlet imagenIndex = 0;\nconst imagenes = items.map(item => {\n  const rutaCompleta = item.json.fileName || \"\";\n  return rutaCompleta.split(\"/\").pop(); // Solo el nombre del archivo\n});\n\n// 2. Reemplazar sugerencias IA por imágenes reales\nlet markdownSinImagenes = markdownOriginal.replace(/!\\[IA-(sugerencia|suggestion):([^\\]]+)\\]/g, (_, tipo, textoAlt) => {\n  const nombreImagen = imagenes[imagenIndex] || \"imagen_no_encontrada.png\";\n  imagenIndex++;\n  return `![${textoAlt.trim()}](${rutaBase}${nombreImagen})`;\n});\n\n// 3. Generar fecha actual sin milisegundos y con zona horaria -04:00\nconst ahora = new Date(Date.now() - 4 * 60 * 60 * 1000); // Ajustar a -04:00\nconst isoSinMs = ahora.toISOString().split('.')[0]; // Quitar milisegundos\nconst fechaFormateada = `${isoSinMs}-04:00`;\n\n// 4. Reemplazar 'valor' por la fecha generada\nmarkdownSinImagenes = markdownSinImagenes.replace(/date\\s*=\\s*valor/, `date = '${fechaFormateada}'`);\n\nconst tituloLimpio = tituloSeo.replace(/[\\\\\\/:*?\"<>|]/g, '').trim();\n\nreturn [\n  {\n    json: {\n      markdown: markdownSinImagenes,\n      titulo: tituloLimpio + \".md\"\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2320,
+        1552
+      ],
+      "id": "86b9abbe-7939-49b0-94fb-f6e925295434",
+      "name": "Code14"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "129dfd34-a5c1-49d4-914c-bdc9bb974fa1",
+              "name": "markdown",
+              "value": "={{ $json.markdown }}",
+              "type": "string"
+            },
+            {
+              "id": "3f5b25eb-d46f-4021-809a-35f817f5f04c",
+              "name": "titulo",
+              "value": "={{ $json.titulo }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2448,
+        1552
+      ],
+      "id": "5665917d-5e59-43d4-ae5c-6017ca2f5fa0",
+      "name": "Edit Fields19"
+    },
+    {
+      "parameters": {
+        "content": "## GLOBAL",
+        "height": 400,
+        "width": 2700,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        288,
+        1440
+      ],
+      "id": "d8274058-9531-44f9-98b9-90d8b330bc75",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4-turbo",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        592,
+        2112
+      ],
+      "id": "1654a1c6-dff4-4519-8cdd-3e58a8150f0b",
+      "name": "OpenRouter Chat Model10",
+      "credentials": {
+        "openRouterApi": {
+          "id": "QETT8kUiuXjnLbpZ",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 1,
+              "triggerAtMinute": 15
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        352,
+        1952
+      ],
+      "id": "4d8b8478-144b-47d2-a986-c4ebffb4ffd0",
+      "name": "Schedule Trigger6"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.mensaje }}",
+        "options": {
+          "systemMessage": "=You are an SEO strategist and editorial expert for a global blog with a dedicated section called \"Tech & AI\".\n\nYour task is to generate **one unique blog article title** in English, designed to stand out, avoid repetition, and attract diverse readers.\n\n---\n\n🧠 Content Themes to rotate between:\n\n- **AI and productivity**\n- **AI in finance or personal tools**\n- **AI in education, healthcare, or creative fields**\n- **Comparisons between AI tools or platforms**\n- **Cultural or country-specific use of technology**\n- **AI ethics, risks, and global regulations**\n- **Emerging trends, predictions, or case studies**\n\n---\n\n✍️ Style Guidelines:\n\n- Maximum: **70 characters**\n- Avoid repeating verbs like “Maximizing”, “Harnessing”, “Boosting”\n- Make each title feel fresh and targeted: new angle, new field, new region\n- Examples of good formats:\n  - “How [Tool] Is Transforming [Industry] in [Country]”\n  - “The AI Revolution in [Field]: A Case from [City or Country]”\n  - “What You Should Know About AI’s Role in [Trend/Challenge]”\n  - “ChatGPT vs Gemini: Which AI Assistant Fits Your Workflow?”\n  - “How India’s Schools Are Using AI to Bridge the Education Gap”\n\n---\n\n🌍 Country Focus:\n\nRotate through English-speaking or tech-active countries (e.g., **USA, UK, India, Canada, Nigeria, Philippines, Australia, Kenya, Brazil, South Africa**) or choose **“global”** only if truly relevant.\n\nAvoid using “Global” too frequently.\n\n---\n\n✅ Final Output:\n\nBefore returning, query the following PostgreSQL table to ensure **no similar or identical title exists**:\n\nSELECT titulo FROM articulos_generados;\n\nIf too similar, regenerate.\n\nGoal: Create a varied, engaging, SEO-ready title that is different from previous ones in content, country, structure, and verb usage.\n\n📤 Output:\nReturn only the final title\n✅ No formatting\n✅ No quotes\n✅ No bullet points or explanations\n\nJust return the title, plain."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        592,
+        1952
+      ],
+      "id": "b87ca853-6197-4bc6-83cf-2843732eb14c",
+      "name": "Generar título SEO único5"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.titulo }}",
+        "options": {
+          "systemMessage": "=You are a professional long-form blog writer for an international tech and AI-focused publication.\n\nYour task is to write a complete, well-researched blog article based on the following title:\n\n[TITLE GOES HERE]\n\n---\n\n✍️ Style & Structure Guidelines:\n\n- **Language**: English  \n- **Length**: Between **3,700 and 4,000 words**\n- **Tone**: Professional and insightful, but clear and engaging\n- **Audience**: Global or country-specific readers interested in technology, AI, productivity, tools, and innovation\n\n---\n\n📌 Article Type (choose one, depending on topic):\n\n- A guide to a specific AI tool or comparison of tools\n- A country-focused case study or societal trend\n- An analysis of AI's impact in a specific field (e.g., healthcare, education, finance, creative work)\n- A research-based insight into risks, ethics, or AI adoption\n- A prediction or review of tech innovations, based on real news, reports, or hypothetical studies\n\n---\n\n🧱 Format:\n\n- Start with a short but powerful **introduction** (no heading)\n- Use **5 to 7 clear sections** with **H2** subheadings only (no H3 or H4 unless necessary)\n- Add **1 conclusion** or reflective closing section\n- Include **lists** or bullet points where relevant\n- Support claims with **at least one expert quote**, source, or book reference\n- Include **at least 3 image suggestions** using the exact syntax below:\n\n![IA-suggestion: Description of the image showing diverse people or real tech context]\n\nUse realistic descriptions. If country-specific, show people or places from that country.\n\n---\n\n📎 Markdown Formatting Instructions:\n\n- Use **valid Markdown only** (do NOT wrap in triple backticks)\n- Do NOT repeat the article title\n- Do NOT write explanations or anything outside the article content\n- Start the article with the following TOML metadata block:\n\n+++\ntitle = \"{{ $('Generar título SEO único5').item.json.output }}\"\ndescription = \"[Short one-sentence summary that hooks the reader]\"\ndate = valor\ncategories = [\"Tech & AI\"]\n+++\n\n---\n\n🎯 Goal:\n\nCreate an informative and high-quality article that adds real value, feels personalized (not generic), and has SEO potential — especially if country-specific.\n\nReturn **only** the final Markdown content."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        992,
+        1952
+      ],
+      "id": "92326f97-c848-48cf-848f-4ea9a77e7162",
+      "name": "Generar contenido completo en Markdown5"
+    },
+    {
+      "parameters": {
+        "model": "anthropic/claude-3-opus",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        992,
+        2112
+      ],
+      "id": "3b406d2f-1714-4cd1-b3a7-219718a51486",
+      "name": "OpenRouter Chat Model11",
+      "credentials": {
+        "openRouterApi": {
+          "id": "QETT8kUiuXjnLbpZ",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "articulos_generados",
+          "mode": "list",
+          "cachedResultName": "articulos_generados"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "titulo": "={{ $json.output }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "titulo",
+              "displayName": "titulo",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "fecha_creacion",
+              "displayName": "fecha_creacion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        864,
+        1952
+      ],
+      "id": "486394dc-0420-41b3-b19c-cf40013a4cd7",
+      "name": "Insertar nuevo título5",
+      "credentials": {
+        "postgres": {
+          "id": "25vNRG11YucIzspL",
+          "name": "\tPostgreSQL Prisma"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT titulo FROM articulos_generados;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        784,
+        2112
+      ],
+      "id": "f73241bf-bd5b-4d13-929f-063fb1802c64",
+      "name": "Postgres5",
+      "credentials": {
+        "postgres": {
+          "id": "25vNRG11YucIzspL",
+          "name": "\tPostgreSQL Prisma"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "=/mnt/n8n-output/tech-ai/{{ $('Edit Fields23').item.json.titulo }}",
+        "dataPropertyName": "binary.data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        2752,
+        1952
+      ],
+      "id": "55cb5830-e0de-4818-b068-ba17ca9be4b4",
+      "name": "Read/Write Files from Disk10"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "46f3e3e8-a3a1-4f29-b314-254a74ad6bcb",
+              "name": "data",
+              "value": "={{ $('Generar contenido completo en Markdown5').item.json.output }}",
+              "type": "string"
+            },
+            {
+              "id": "11a78287-8ab6-4cd0-94b6-94f1380ff1ab",
+              "name": "filename",
+              "value": "={{ $('Insertar nuevo título5').item.json.titulo }}.md",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2208,
+        1952
+      ],
+      "id": "d39dbc88-8ed7-4280-bdd2-a16e823ab262",
+      "name": "Edit Fields20",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "11eac4ad-2d02-4907-bbd9-719f4973e375",
+              "name": "mensaje",
+              "value": "genera un titulo",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        464,
+        1952
+      ],
+      "id": "4a5ca706-a6fd-4b38-92eb-d43206231553",
+      "name": "Edit Fields21"
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "markdown",
+        "binaryPropertyName": "binary.data",
+        "options": {
+          "fileName": "={{ $json.titulo }}"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        2592,
+        1952
+      ],
+      "id": "3d1db503-61be-4695-a4d4-6fbe79ad5c61",
+      "name": "Convert to File5"
+    },
+    {
+      "parameters": {
+        "jsCode": "const markdown = $input.first().json.output;\nconst regex = /!\\[IA-suggestion: (.*?)\\]/g;\nlet matches = [];\nlet m;\nlet count = 1;\n\nwhile ((m = regex.exec(markdown)) !== null) {\n  matches.push({\n    prompt: m[1],\n    marcadorOriginal: m[0],\n    nombreArchivo: `imagen-${count}.png`\n  });\n  count++;\n}\n\nreturn matches.map(imagen => ({ json: imagen }));\n$input.first().json.output"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1648,
+        1952
+      ],
+      "id": "d0c623e9-0a6c-4650-b0cb-9748d372e27a",
+      "name": "Code15"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "model": "=dall-e-3",
+        "prompt": "={{ $json.prompt }}",
+        "options": {
+          "returnImageUrls": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        1760,
+        1952
+      ],
+      "id": "a3dcb6b3-42ef-43f0-82de-aaab2184e545",
+      "name": "Generador imagen5",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "credentials": {
+        "openAiApi": {
+          "id": "qRqeWgwWSInHs854",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Generador imagen5').item.json.url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "binary.data"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1904,
+        1952
+      ],
+      "id": "24c1a39b-b83c-49ae-a8a0-5bc7ed282c4a",
+      "name": "Descargar Imagen5"
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "=/mnt/n8n-output/imagenes/imagen{{$itemIndex + $('Code16').item.json.stdout + 1}}.png",
+        "dataPropertyName": "binary.data",
+        "options": {
+          "append": false
+        }
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        2064,
+        1952
+      ],
+      "id": "643b973b-774c-4767-b7dc-0b590fd3598a",
+      "name": "Read/Write Files from Disk11",
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "jsCode": "const offset = parseInt($node[\"Contar Imágenes Existentes5\"].json[\"stdout\"]) || 0;\n\nreturn items.map((item, index) => {\n  return {\n    json: {\n      ...item.json,\n      nombreImagen: `/mnt/n8n-output/imagenes/imagen${offset + index + 1}.png`\n    },\n    binary: item.binary\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1392,
+        1952
+      ],
+      "id": "c23db7f9-205c-482e-b53b-d28435d885d4",
+      "name": "Code16"
+    },
+    {
+      "parameters": {
+        "executeOnce": false,
+        "command": "ls /mnt/n8n-output/imagenes | grep -oP 'imagen\\d+\\.png' | wc -l"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1264,
+        1952
+      ],
+      "id": "d944fbf1-36b3-4937-9e85-5284c9137fbf",
+      "name": "Contar Imágenes Existentes5",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "de6a80fd-3c53-4b62-97f2-9f0499dc95be",
+              "name": "output",
+              "value": "={{ $('Generar contenido completo en Markdown5').item.json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1504,
+        1952
+      ],
+      "id": "44e96af2-fbfb-4843-bc19-2cc04a8af79a",
+      "name": "Edit Fields22"
+    },
+    {
+      "parameters": {
+        "jsCode": "const markdownOriginal = $input.first().json.data;\nconst rutaBase = \"https://los-prismas.web.app/img/\";\nconst tituloSeo = $('Generar título SEO único5').first().json.output;\n\n// 1. Extraer nombre del archivo de cada imagen\nlet imagenIndex = 0;\nconst imagenes = items.map(item => {\n  const rutaCompleta = item.json.fileName || \"\";\n  return rutaCompleta.split(\"/\").pop(); // Solo el nombre del archivo\n});\n\n// 2. Reemplazar sugerencias IA por imágenes reales\nlet markdownSinImagenes = markdownOriginal.replace(/!\\[IA-(sugerencia|suggestion):([^\\]]+)\\]/g, (_, tipo, textoAlt) => {\n  const nombreImagen = imagenes[imagenIndex] || \"imagen_no_encontrada.png\";\n  imagenIndex++;\n  return `![${textoAlt.trim()}](${rutaBase}${nombreImagen})`;\n});\n\n// 3. Generar fecha actual sin milisegundos y con zona horaria -04:00\nconst ahora = new Date(Date.now() - 4 * 60 * 60 * 1000); // Ajustar a -04:00\nconst isoSinMs = ahora.toISOString().split('.')[0]; // Quitar milisegundos\nconst fechaFormateada = `${isoSinMs}-04:00`;\n\n// 4. Reemplazar 'valor' por la fecha generada\nmarkdownSinImagenes = markdownSinImagenes.replace(/date\\s*=\\s*valor/, `date = '${fechaFormateada}'`);\n\nconst tituloLimpio = tituloSeo.replace(/[\\\\\\/:*?\"<>|]/g, '').trim();\n\nreturn [\n  {\n    json: {\n      markdown: markdownSinImagenes,\n      titulo: tituloLimpio + \".md\"\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2320,
+        1952
+      ],
+      "id": "09b896ed-582c-4de6-b0aa-4d16cd690a77",
+      "name": "Code17"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "129dfd34-a5c1-49d4-914c-bdc9bb974fa1",
+              "name": "markdown",
+              "value": "={{ $json.markdown }}",
+              "type": "string"
+            },
+            {
+              "id": "3f5b25eb-d46f-4021-809a-35f817f5f04c",
+              "name": "titulo",
+              "value": "={{ $json.titulo }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2448,
+        1952
+      ],
+      "id": "450411ad-cab6-4506-a21f-dabaa1b8a8c0",
+      "name": "Edit Fields23"
+    },
+    {
+      "parameters": {
+        "content": "## Tech & AI",
+        "height": 400,
+        "width": 2700,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        288,
+        1840
+      ],
+      "id": "7ca19fb1-b28e-4d13-9a47-528daf5f77d5",
+      "name": "Sticky Note5"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generar título SEO único",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generar título SEO único": {
+      "main": [
+        [
+          {
+            "node": "Insertar nuevo título",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generar contenido completo en Markdown",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generar contenido completo en Markdown": {
+      "main": [
+        [
+          {
+            "node": "Contar Imágenes Existentes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres1": {
+      "ai_tool": [
+        [
+          {
+            "node": "Generar título SEO único",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insertar nuevo título": {
+      "main": [
+        [
+          {
+            "node": "Generar contenido completo en Markdown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Generar título SEO único",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk": {
+      "main": [
+        []
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Generador imagen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generador imagen": {
+      "main": [
+        [
+          {
+            "node": "Descargar Imagen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Descargar Imagen": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk2": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Contar Imágenes Existentes": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields3": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generar título SEO único1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generar título SEO único1": {
+      "main": [
+        [
+          {
+            "node": "Insertar nuevo título1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generar contenido completo en Markdown1": {
+      "main": [
+        [
+          {
+            "node": "Contar Imágenes Existentes1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generar contenido completo en Markdown1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insertar nuevo título1": {
+      "main": [
+        [
+          {
+            "node": "Generar contenido completo en Markdown1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres": {
+      "ai_tool": [
+        [
+          {
+            "node": "Generar título SEO único1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields4": {
+      "main": [
+        [
+          {
+            "node": "Code5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields5": {
+      "main": [
+        [
+          {
+            "node": "Generar título SEO único1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File1": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code3": {
+      "main": [
+        [
+          {
+            "node": "Generador imagen1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generador imagen1": {
+      "main": [
+        [
+          {
+            "node": "Descargar Imagen1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Descargar Imagen1": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk3": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code4": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Contar Imágenes Existentes1": {
+      "main": [
+        [
+          {
+            "node": "Code4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields6": {
+      "main": [
+        [
+          {
+            "node": "Code3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code5": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields7": {
+      "main": [
+        [
+          {
+            "node": "Convert to File1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generar título SEO único2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger2": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generar título SEO único2": {
+      "main": [
+        [
+          {
+            "node": "Insertar nuevo título2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generar contenido completo en Markdown2": {
+      "main": [
+        [
+          {
+            "node": "Contar Imágenes Existentes2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generar contenido completo en Markdown2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insertar nuevo título2": {
+      "main": [
+        [
+          {
+            "node": "Generar contenido completo en Markdown2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres2": {
+      "ai_tool": [
+        [
+          {
+            "node": "Generar título SEO único2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields8": {
+      "main": [
+        [
+          {
+            "node": "Code8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields9": {
+      "main": [
+        [
+          {
+            "node": "Generar título SEO único2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File2": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code6": {
+      "main": [
+        [
+          {
+            "node": "Generador imagen2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generador imagen2": {
+      "main": [
+        [
+          {
+            "node": "Descargar Imagen2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Descargar Imagen2": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk5": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code7": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields10",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Contar Imágenes Existentes2": {
+      "main": [
+        [
+          {
+            "node": "Code7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields10": {
+      "main": [
+        [
+          {
+            "node": "Code6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code8": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields11",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields11": {
+      "main": [
+        [
+          {
+            "node": "Convert to File2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model6": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generar título SEO único3",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger3": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields13",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generar título SEO único3": {
+      "main": [
+        [
+          {
+            "node": "Insertar nuevo título3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generar contenido completo en Markdown3": {
+      "main": [
+        [
+          {
+            "node": "Contar Imágenes Existentes3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model7": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generar contenido completo en Markdown3",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insertar nuevo título3": {
+      "main": [
+        [
+          {
+            "node": "Generar contenido completo en Markdown3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres3": {
+      "ai_tool": [
+        [
+          {
+            "node": "Generar título SEO único3",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields12": {
+      "main": [
+        [
+          {
+            "node": "Code11",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields13": {
+      "main": [
+        [
+          {
+            "node": "Generar título SEO único3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File3": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code9": {
+      "main": [
+        [
+          {
+            "node": "Generador imagen3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generador imagen3": {
+      "main": [
+        [
+          {
+            "node": "Descargar Imagen3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Descargar Imagen3": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk7": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields12",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code10": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields14",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Contar Imágenes Existentes3": {
+      "main": [
+        [
+          {
+            "node": "Code10",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields14": {
+      "main": [
+        [
+          {
+            "node": "Code9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code11": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields15",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields15": {
+      "main": [
+        [
+          {
+            "node": "Convert to File3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger4": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model8": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generar título SEO único4",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger5": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields17",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generar título SEO único4": {
+      "main": [
+        [
+          {
+            "node": "Insertar nuevo título4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generar contenido completo en Markdown4": {
+      "main": [
+        [
+          {
+            "node": "Contar Imágenes Existentes4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model9": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generar contenido completo en Markdown4",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insertar nuevo título4": {
+      "main": [
+        [
+          {
+            "node": "Generar contenido completo en Markdown4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres4": {
+      "ai_tool": [
+        [
+          {
+            "node": "Generar título SEO único4",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields16": {
+      "main": [
+        [
+          {
+            "node": "Code14",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields17": {
+      "main": [
+        [
+          {
+            "node": "Generar título SEO único4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File4": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code12": {
+      "main": [
+        [
+          {
+            "node": "Generador imagen4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generador imagen4": {
+      "main": [
+        [
+          {
+            "node": "Descargar Imagen4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Descargar Imagen4": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk9": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields16",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code13": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields18",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Contar Imágenes Existentes4": {
+      "main": [
+        [
+          {
+            "node": "Code13",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields18": {
+      "main": [
+        [
+          {
+            "node": "Code12",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code14": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields19",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields19": {
+      "main": [
+        [
+          {
+            "node": "Convert to File4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model10": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generar título SEO único5",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger6": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields21",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generar título SEO único5": {
+      "main": [
+        [
+          {
+            "node": "Insertar nuevo título5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generar contenido completo en Markdown5": {
+      "main": [
+        [
+          {
+            "node": "Contar Imágenes Existentes5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model11": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generar contenido completo en Markdown5",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insertar nuevo título5": {
+      "main": [
+        [
+          {
+            "node": "Generar contenido completo en Markdown5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres5": {
+      "ai_tool": [
+        [
+          {
+            "node": "Generar título SEO único5",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields20": {
+      "main": [
+        [
+          {
+            "node": "Code17",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields21": {
+      "main": [
+        [
+          {
+            "node": "Generar título SEO único5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File5": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk10",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code15": {
+      "main": [
+        [
+          {
+            "node": "Generador imagen5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generador imagen5": {
+      "main": [
+        [
+          {
+            "node": "Descargar Imagen5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Descargar Imagen5": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk11",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk11": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields20",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code16": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields22",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Contar Imágenes Existentes5": {
+      "main": [
+        [
+          {
+            "node": "Code16",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields22": {
+      "main": [
+        [
+          {
+            "node": "Code15",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code17": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields23",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields23": {
+      "main": [
+        [
+          {
+            "node": "Convert to File5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "8528c1c2-2464-406c-9dea-ac49147853a5",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c0c550501b7896ab0eff6edacfb19ee553f2da638e369fa0272020aa7d2ebf5a"
+  },
+  "id": "d1SyKx1vhUHdkfxm",
+  "tags": []
+}
