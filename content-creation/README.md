@@ -40,9 +40,8 @@ Estandarizar un pipeline de creación de contenido: toma insumos estructurados, 
 
 Si agregas una captura del flujo a esta carpeta, referencia el archivo así:
 
-```markdown
+# 🧩 Subflujo de Procesamiento
 ![Workflow diagram](./content-creation-screenshot.png)
-```
 
 ## Seguridad
 
