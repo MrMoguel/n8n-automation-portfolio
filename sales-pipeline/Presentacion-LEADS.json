@@ -1,0 +1,312 @@
+{
+  "name": "Presentacion LEADS",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "nombre-negocio"
+            },
+            {
+              "name": "correo-cliente"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        64,
+        0
+      ],
+      "id": "abe38a08-156a-4b50-8007-31dd36b717bb",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "1KKGCsS87885BRJj_6oUpXxVQrIP-Ava5",
+          "mode": "list",
+          "cachedResultName": "PRESENTACION eDEA.pdf",
+          "cachedResultUrl": "https://drive.google.com/file/d/1KKGCsS87885BRJj_6oUpXxVQrIP-Ava5/view?usp=drivesdk"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        480,
+        -192
+      ],
+      "id": "682f8841-660b-4a6d-b8c4-f9c403288b02",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "yvl6XOpC2Ng8ASAD",
+          "name": "Google Drive account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "contacto@edea.cl",
+        "toEmail": "={{ $('When Executed by Another Workflow').item.json['correo-cliente'] }}",
+        "subject": "=Presentación y propuesto eDEA para {{ $('When Executed by Another Workflow').item.json['nombre-negocio'] }}.",
+        "html": "=<!DOCTYPE html>\n<html>\n  <body style=\"font-family: Arial, sans-serif; color: #222;\">\n    <p>Estimados,</p>\n\n    <p>\n      Como se conversó vía WhatsApp, le envío la información y la presentación de eDEA para {{ $('When Executed by Another Workflow').item.json['nombre-negocio'] }}.\n    </p>\n\n    <p>\n      Estamos convencidos de que {{ $('When Executed by Another Workflow').item.json['nombre-negocio'] }} tiene un potencial enorme para destacar dentro de la ciudad, por su propuesta y el interés real de sus clientes. Por eso nos gustaría ayudarles a llevar su marca al siguiente nivel.\n    </p>\n\n    <h3>¿Qué puede hacer eDEA por su negocio?</h3>\n    <p>\n      Aplicamos <strong>soluciones digitales</strong> adaptadas a la realidad de cada marca para que logren más ventas, mejor posicionamiento y eficiencia operativa. Nuestros servicios principales incluyen:\n    </p>\n    <ul>\n      <li><strong>Automatización de procesos:</strong> para ahorrar tiempo y ofrecer una mejor atención (chatbots, reservas automáticas, recordatorios).</li>\n      <li><strong>Gestión profesional de redes sociales:</strong> optimización de Instagram, Facebook y otras plataformas, búsqueda de crecimiento orgánico y campañas pagadas para mayor alcance.</li>\n      <li><strong>Creación de contenido de alto nivel:</strong> fotografía, video y diseño que muestran lo mejor del negocio y conectan con el público correcto.</li>\n      <li><strong>Optimización de presencia online:</strong> mejora de posicionamiento en Google y directorios, página web funcional y fácil de navegar.</li>\n    </ul>\n    <p>\n      Si le interesa conocer cómo podemos trabajar juntos para que {{ $('When Executed by Another Workflow').item.json['nombre-negocio'] }} crezca en el entorno digital, le propongo coordinar una reunión de 30 minutos con los responsables de la agencia, donde podemos conversar de sus desafíos y mostrarle ejemplos de cómo hemos ayudado a otros negocios similares.\n    </p>\n    <p>\n      Adjunto la presentación de eDEA para que conozca más sobre nuestro enfoque.\n    </p>\n    <p>\n      Quedo atento a su mensaje para agendar la llamada, sin compromiso. Estoy seguro de que juntos podemos potenciar aún más el negocio.\n    </p>\n    <p>\n      <strong>P.S.:</strong> Si el negocio busca crecer, digitalizarse o ahorrar tiempo en atención, este es el momento de dar el siguiente paso. ¡Estamos listos para ayudarlos!\n    </p>\n    <p>&nbsp;</p>\n    <table style=\"border-collapse: collapse; background: #ffffff; font-family: Arial, Helvetica, sans-serif;\" border=\"0\" width=\"600\" cellspacing=\"0\" cellpadding=\"0\" align=\"left\">\n      <tbody>\n        <tr>\n          <td style=\"background: #111111; color: #ffffff; padding: 28px 20px; text-align: left;\" valign=\"middle\" width=\"180\">\n            <div style=\"font-size: 36px; line-height: 36px; font-weight: bold; letter-spacing: 0.5px; text-align: center;\">&euml;DEA</div>\n            <div style=\"font-size: 11px; line-height: 16px; color: #cfcfcf; margin-top: 6px; text-align: center;\">AGENCIA DE PERFORMANCE</div>\n          </td>\n          <td style=\"width: 12px;\" width=\"12\">&nbsp;</td>\n          <td style=\"padding: 24px 10px 24px 0; color: #111111;\" valign=\"middle\">\n            <div style=\"font-size: 22px; line-height: 26px; font-weight: 800; color: #111111;\">MIGUEL MATURANA</div>\n            <div style=\"font-size: 12px; line-height: 18px; color: #555555; margin: 2px 0 14px;\">Founder &middot; Automation Specialist</div>\n            <table style=\"font-size: 13px; line-height: 19px; color: #111111;\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n              <tbody>\n                <tr>\n                  <td style=\"padding-right: 8px; color: #777777;\">✉</td>\n                  <td><a style=\"color: #111111; text-decoration: none;\" href=\"mailto:contacto@edea.cl\">contacto@edea.cl</a></td>\n                </tr>\n                <tr>\n                  <td style=\"padding-right: 8px; color: #777777;\">☎</td>\n                  <td><a style=\"color: #111111; text-decoration: none;\" href=\"tel:+56927303720\">+56 9 2730 3720</a></td>\n                </tr>\n                <tr>\n                  <td style=\"padding-right: 8px; color: #777777;\">🌐</td>\n                  <td><a style=\"color: #111111; text-decoration: none;\" href=\"https://www.edea.cl\">www.edea.cl</a></td>\n                </tr>\n              </tbody>\n            </table>\n          </td>\n        </tr>\n      </tbody>\n    </table>\n  </body>\n</html>\n",
+        "options": {
+          "appendAttribution": false,
+          "attachments": "presentacion.pdf"
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        496,
+        0
+      ],
+      "id": "0bc1fdda-83dd-4e5d-b46f-964ca9b080d8",
+      "name": "Send email",
+      "webhookId": "fcdff872-3f6d-4c37-a333-f5364a6cb708",
+      "credentials": {
+        "smtp": {
+          "id": "tKU3m5eFHFbOwNrX",
+          "name": "contacto@edea.cl"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4130d126-275e-4350-a5a0-9430f5758d8a",
+              "name": "output",
+              "value": "=correo enviado a {{ $json.accepted[0] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        704,
+        0
+      ],
+      "id": "f8136423-30e1-4dd3-b073-a1e111c7b987",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "1KKGCsS87885BRJj_6oUpXxVQrIP-Ava5",
+          "mode": "list",
+          "cachedResultName": "PRESENTACION eDEA.pdf",
+          "cachedResultUrl": "https://drive.google.com/file/d/1KKGCsS87885BRJj_6oUpXxVQrIP-Ava5/view?usp=drivesdk"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        320,
+        288
+      ],
+      "id": "5e2ccbdf-7c17-494e-94ae-7b5872410f15",
+      "name": "Download file1",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "yvl6XOpC2Ng8ASAD",
+          "name": "Google Drive account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "contacto@edea.cl",
+        "toEmail": "=contact@example.com",
+        "subject": "=Presentación y propuesto eDEA para Te apetece",
+        "html": "=<!DOCTYPE html>\n<html>\n  <body style=\"font-family: Arial, sans-serif; color: #222;\">\n    <p>Estimados,</p>\n    <p>\n      Muchas gracias por el interés y por compartir su contacto. Analizamos rápidamente la presencia de Te apetece y encontramos oportunidades prioritarias para potenciar su negocio con acciones de impacto rápido.\n    </p>\n    <p>Según nuestro diagnóstico, estos son los servicios que pueden marcar la diferencia para ustedes:</p>\n    <ul>\n      <li><strong>CRÍTICOS:</strong>\n        <ul>\n          <li>Crear y optimizar Google My Business (posicionamiento en búsquedas locales, reviews, fotos profesionales).</li>\n          <li>Crear un sitio web funcional, orientado a captar nuevos clientes y mostrar carta/ubicación/contacto.</li>\n        </ul>\n      </li>\n      <li><strong>ALTOS:</strong>\n        <ul>\n          <li>Estrategia y gestión de Instagram y TikTok (diseño de contenido atractivo, parrilla organizada, campañas para aumentar comunidad y visitas).</li>\n          <li>Reclamación y activación de TripAdvisor (clave para turistas y reputación digital).</li>\n          <li>Publicidad digital: campañas segmentadas (Meta y Google) para atraer más gente del sector y retargeting.</li>\n        </ul>\n      </li>\n      <li><strong>MEDIANOS:</strong>\n        <ul>\n          <li>Email marketing para aumentar retención y frecuencia de visita.</li>\n          <li>WhatsApp business con automatización (atención de consultas y reservas 24/7).</li>\n        </ul>\n      </li>\n    </ul>\n    <p>\n      Quedamos a disposición para explicar cómo cada solución puede ayudarles a crecer y qué quick wins pueden lograr en pocas semanas. Sugerimos agendar una breve reunión (online o presencial) para mostrarles ejemplos y definir un plan a la medida de Te apetece.\n    </p>\n    <p>\n      Adjunto la presentación de eDEA para profundizar sobre nuestra propuesta de valor.\n    </p>\n    <p>\n      Quedamos atentos a su confirmación para coordinar. ¡Sería un honor acompañarlos en este proceso!\n    </p>\n    <p>&nbsp;</p>\n    <table style=\"border-collapse: collapse; background: #ffffff; font-family: Arial, Helvetica, sans-serif;\" border=\"0\" width=\"600\" cellspacing=\"0\" cellpadding=\"0\" align=\"left\">\n      <tbody>\n        <tr>\n          <td style=\"background: #111111; color: #ffffff; padding: 28px 20px; text-align: left;\" valign=\"middle\" width=\"180\">\n            <div style=\"font-size: 36px; line-height: 36px; font-weight: bold; letter-spacing: 0.5px; text-align: center;\">&euml;DEA</div>\n            <div style=\"font-size: 11px; line-height: 16px; color: #cfcfcf; margin-top: 6px; text-align: center;\">AGENCIA DE PERFORMANCE</div>\n          </td>\n          <td style=\"width: 12px;\" width=\"12\">&nbsp;</td>\n          <td style=\"padding: 24px 10px 24px 0; color: #111111;\" valign=\"middle\">\n            <div style=\"font-size: 22px; line-height: 26px; font-weight: 800; color: #111111;\">MIGUEL MATURANA</div>\n            <div style=\"font-size: 12px; line-height: 18px; color: #555555; margin: 2px 0 14px;\"> Automation Specialist</div>\n            <table style=\"font-size: 13px; line-height: 19px; color: #111111;\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n              <tbody>\n                <tr>\n                  <td style=\"padding-right: 8px; color: #777777;\">✉</td>\n                  <td><a style=\"color: #111111; text-decoration: none;\" href=\"mailto:contacto@edea.cl\">contacto@edea.cl</a></td>\n                </tr>\n                <tr>\n                  <td style=\"padding-right: 8px; color: #777777;\">☎</td>\n                  <td><a style=\"color: #111111; text-decoration: none;\" href=\"tel:+56927303720\">+56 9 2730 3720</a></td>\n                </tr>\n                <tr>\n                  <td style=\"padding-right: 8px; color: #777777;\">🌐</td>\n                  <td><a style=\"color: #111111; text-decoration: none;\" href=\"https://www.edea.cl\">www.edea.cl</a></td>\n                </tr>\n              </tbody>\n            </table>\n          </td>\n        </tr>\n      </tbody>\n    </table>\n  </body>\n</html>\n",
+        "options": {
+          "appendAttribution": false,
+          "attachments": "data"
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        608,
+        288
+      ],
+      "id": "91dbb506-da69-41fb-973e-08e66b043bfb",
+      "name": "Send email1",
+      "webhookId": "fcdff872-3f6d-4c37-a333-f5364a6cb708",
+      "credentials": {
+        "smtp": {
+          "id": "tKU3m5eFHFbOwNrX",
+          "name": "contacto@edea.cl"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4130d126-275e-4350-a5a0-9430f5758d8a",
+              "name": "output",
+              "value": "=correo enviado a {{ $json.accepted[0] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        816,
+        288
+      ],
+      "id": "7dc7eb84-c6b0-42ca-b2e4-71448c0f48c8",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        96,
+        288
+      ],
+      "id": "a9bb9d0d-0b0c-4bf8-a3a5-f7c16cc42a64",
+      "name": "When clicking ‘Execute workflow’",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "url": "https://drive.google.com/uc",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "export",
+              "value": "download"
+            },
+            {
+              "name": "id",
+              "value": "1KKGCsS87885BRJj_6oUpXxVQrIP-Ava5"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "presentacion.pdf"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        272,
+        0
+      ],
+      "id": "f982e995-649b-4009-adda-cdc40b8d884e",
+      "name": "HTTP Request"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        []
+      ]
+    },
+    "Send email": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file1": {
+      "main": [
+        [
+          {
+            "node": "Send email1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send email1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Download file1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Send email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "7bca9989-b179-4486-a1ed-40a99ced9b7c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c0c550501b7896ab0eff6edacfb19ee553f2da638e369fa0272020aa7d2ebf5a"
+  },
+  "id": "BZTBNBAgiKZhuBes",
+  "tags": []
+}
