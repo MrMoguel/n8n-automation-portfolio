@@ -1,0 +1,2172 @@
+{
+  "name": "generador contenido eDEA",
+  "nodes": [
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5",
+          "mode": "list",
+          "cachedResultName": "gpt-5"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        2000,
+        352
+      ],
+      "id": "33ed473e-9301-48c9-900a-99a58bf476fd",
+      "name": "OpenAI Chat Model9",
+      "credentials": {
+        "openAiApi": {
+          "id": "qRqeWgwWSInHs854",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "x-ai/grok-4",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        2160,
+        352
+      ],
+      "id": "79f658e9-5548-4ffc-b1b5-c32968fba67c",
+      "name": "OpenRouter Chat Model3",
+      "credentials": {
+        "openRouterApi": {
+          "id": "QETT8kUiuXjnLbpZ",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You will receive an array of Instagram video content ideas in Spanish and the brand context.\n\nBRAND CONTEXT:\n{{ $json.context }}\n\nINPUT (JSON array of ideas):\n{{ JSON.stringify($json.ideas) }}\n\nFor each idea, produce a robust **English cinematic visual prompt for VIDEO generation** using all relevant information in the idea **and the brand context**:\n- concept  \n- shot (framing, camera, lens, movement, lighting, environment)  \n- vfx  \n- music_style (translate to English; specify only genre/mood/instrumental, no SFX or ambient noises)  \n- tags (only if useful for mood/style)  \n- brand context elements (tone, colors, visual identity, thematic focus) from {{ $json.context }}\n\nThe video duration is ALWAYS **10 seconds**. Describe a coherent scene with fluid continuity (you may allow subtle shot changes), and it must feel like a professional ad that matches the brand's style and personality.\n\nAdditionally:\n- Create a `\"voiceover\"` field with the **Spanish Latin American** natural translation of the idea’s main concept (human narrator tone).\n- The `\"prompt\"` must **not** contain voiceover text or instructions—only the cinematic visual description.\n\nRULES:\n- Translate and unify the provided info and brand context into a single cinematic description.\n- Include:\n  - Scene/setting details.\n  - Camera work and **lens** details.\n  - Lighting and atmosphere.\n  - Environment elements.\n  - VFX integration (only if relevant/beneficial).\n  - Mood and tone.\n  - Music style (instrumental/genre/mood only).\n- Add explicit negatives to remove undesired artifacts:  \n  **\"no text, no typography, no letters, no logos, no watermarks, no UI\"**.\n- Use the aspect ratio from the idea (`aspect_ratio`).\n- If you include steam or smoke (for example in beverages or food), it must be very subtle, almost imperceptible, and physically realistic. Avoid thick columns, exaggerated shapes, or stylized forms. The effect should blend naturally with the light and environment, as it would appear in a real photograph taken with a professional lens.\n\nOUTPUT FORMAT (strict JSON array):\n[\n  {\n    \"prompt\": \"Full English cinematic visual prompt describing scene, setting, camera work and lens, lighting, environment, VFX (if any), mood and atmosphere, music style, and brand context integration. Must read like a professional ad shot. Include the explicit negatives to remove text and UI.\",\n    \"aspect_ratio\": \"value from idea.aspect_ratio\",\n    \"voiceover\": \"Spanish Latin American natural narration of the main concept\"\n  }\n]\n",
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "=You are a professional visual marketing prompt engineer.  \nReturn ONLY a valid JSON ARRAY (no markdown, no prose, no code fences).  \nEach item must contain exactly: {\"prompt\": \"...\", \"aspect_ratio\": \"9:16|4:5\", \"voiceover\": \"...\"}.\n\nCRITICAL RULES:\n- The \"prompt\" must **NOT** include any on‑image text, letters, words, typography, logos, watermarks, UI, or captions.\n- For audio, ONLY specify the **music style** (instrumental/genre/mood). **No** ambient sounds, SFX, foley, crowd noise, or sound descriptions.\n- The \"voiceover\" must be a **Spanish Latin American** natural phrasing of the main concept, as if spoken by a human narrator (concise and convincing).\n- Language: **English** for \"prompt\" and **Spanish (LatAm)** for \"voiceover\".",
+          "batching": {}
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        2016,
+        144
+      ],
+      "id": "9a782342-5c3e-44ad-8cde-65c7a256b1da",
+      "name": "AI ayudante"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "documentURL": "https://docs.google.com/document/d/1NeNnw76AYFQcASaye1Qzn1Aaqxb5qAEzV7UrkwZYj4o/edit?usp=sharing"
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        448,
+        144
+      ],
+      "id": "fc03125d-e5f7-49e8-a80b-8268bac647ba",
+      "name": "eDEA_Manual_Interno",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "QylVCQGs9tzqXQ3w",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8ec31d6d-3f27-4b05-b6d8-8f3cd55cfcec",
+              "name": "user_request",
+              "value": "={{ $('If3').item.json.command }}",
+              "type": "string"
+            },
+            {
+              "id": "5f835a57-b8d3-48a5-a568-86c78a91a6c7",
+              "name": "brand_context1",
+              "value": "={{ $json.content }}",
+              "type": "string"
+            },
+            {
+              "id": "6b514b5d-1ea4-4376-87d3-73092045e59a",
+              "name": "sessionId",
+              "value": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        624,
+        144
+      ],
+      "id": "aa97800a-aee6-4f6e-b438-1354292c050a",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "// === tomar content crudo ===\nconst raw =\n  $json?.choices?.[0]?.message?.content ??\n  $json?.content ?? $json?.text ?? '';\n\nif (!raw || !String(raw).trim()) {\n  return [{ json: { note: 'Sin content de Perplexity' } }];\n}\n\n// --- helpers de parseo muy breves ---\nfunction block(text){\n  const mJson = text.match(/```json([\\s\\S]*?)```/i);\n  if (mJson) return mJson[1].trim();\n  const mAny = text.match(/```([\\s\\S]*?)```/);\n  if (mAny) return mAny[1].trim();\n  const f = text.indexOf('{'), l = text.lastIndexOf('}');\n  if (f !== -1 && l > f) return text.slice(f, l + 1);\n  return text.trim();\n}\nfunction clean(text){\n  return String(text)\n    .replace(/\\u201C|\\u201D/g, '\"')\n    .replace(/\\u2018|\\u2019/g, \"'\")\n    .replace(/^\\uFEFF/, '')\n    .replace(/```/g, '')\n    .replace(/,\\s*([}\\]])/g, '$1')\n    .trim();\n}\nfunction parseMaybe(text){\n  try { return JSON.parse(text); } catch(_){}\n  try { return JSON.parse(clean(block(text))); } catch(_){}\n  return null;\n}\n\n// --- parsear ideas ---\nconst parsed = parseMaybe(String(raw));\nlet ideas = [];\nif (Array.isArray(parsed)) ideas = parsed;\nelse if (parsed && Array.isArray(parsed.ideas)) ideas = parsed.ideas;\nelse if (parsed && typeof parsed === 'object') ideas = [parsed];\n\n// --- construir content_sql (concept + environment) y flatten ---\nfunction conceptEnv(o){\n  const concept = (o?.concept || '').toString().trim();\n  const env = (o?.shot?.environment || o?.environment || '').toString().trim();\n  const parts = [concept, env].filter(Boolean);\n  return parts.join('. ');\n}\nfunction flatten(o){\n  const s = o?.shot || {}, t = o?.screen_text || {};\n  return {\n    type: o?.type ?? 'video',\n    duration_seconds: o?.duration_seconds ?? 8,\n    aspect_ratio: o?.aspect_ratio ?? '9:16',\n    title: o?.title ?? '',\n    concept: o?.concept ?? '',\n    framing: s?.framing ?? '',\n    camera: s?.camera ?? '',\n    movement: s?.movement ?? '',\n    lighting: s?.lighting ?? '',\n    environment: s?.environment ?? '',\n    vfx: o?.vfx ?? '',\n    screen_text_enabled: !!t?.enabled,\n    screen_text_text: t?.text ?? '',\n    screen_text_position: t?.position ?? '',\n    screen_text_style: t?.style ?? '',\n    audio: o?.audio ?? '',\n    tags: Array.isArray(o?.tags) ? o.tags : []\n  };\n}\n\n// --- salida: 1 item por idea ---\nif (!ideas.length) {\n  // fallback: si no parsea, al menos entrega algo\n  const txt = String(raw).replace(/```[\\s\\S]*?```/g, '').slice(0, 1000);\n  return [{ json: { content_sql: txt, idea: { note: 'fallback_raw' } } }];\n}\n\nreturn ideas.map(idea => ({\n  json: {\n    content_sql: conceptEnv(idea),  // <-- para la query\n    idea: flatten(idea)             // <-- idea planchada\n  }\n}));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1296,
+        144
+      ],
+      "id": "b0300efd-55d0-49e6-84bd-19f601da3f05",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "jsCode": "// === Config: si quieres remover \"Music: ...\" del prompt final, pon true ===\nconst STRIP_MUSIC_FROM_PROMPT = false;\n\n// === Utilidad: parseo robusto de JSON o string con fences ===\nfunction parseMaybeString(raw) {\n  if (typeof raw !== 'string') return raw;\n\n  let cleaned = raw\n    .replace(/^\\s*```json\\s*/i, '')\n    .replace(/^\\s*```\\s*/i, '')\n    .replace(/\\s*```$/i, '')\n    .trim();\n\n  try { return JSON.parse(cleaned); } catch (_) {}\n\n  const matchArray = cleaned.match(/\\[\\s*{[\\s\\S]*}\\s*\\]/);\n  if (matchArray) {\n    try { return JSON.parse(matchArray[0]); } catch (_) {}\n  }\n\n  const matchObj = cleaned.match(/{[\\s\\S]*}/);\n  if (matchObj) {\n    try { return JSON.parse(matchObj[0]); } catch (_) {}\n  }\n\n  throw new Error('No se pudo parsear el JSON de salida del agente.');\n}\n\n// === Normaliza aspect ratio \"9x16\" => \"9:16\"\nfunction normalizeAspect(r) {\n  if (!r) return r;\n  const nr = r.toString().trim().replace(/[xX]/g, ':');\n  if (nr === '9:16' || nr === '1:1') return nr;\n  return nr; // deja otros valores tal cual por si el agente agrega más\n}\n\n// === Extrae \"Music: ...\" del prompt (no destructivo por defecto)\nfunction extractMusicFromPrompt(prompt) {\n  if (!prompt) return { music: '', newPrompt: prompt };\n\n  // Soporta \"Music:\", \"Music -\", \"Music —\"\n  const re = /\\bMusic\\s*[:\\-–—]\\s*([^\\n\\r.]+?)(?=\\s*(?:\\.|$|no\\s+text))/i;\n  const m = re.exec(prompt);\n\n  if (!m) return { music: '', newPrompt: prompt };\n\n  const music = m[1].trim();\n\n  if (!STRIP_MUSIC_FROM_PROMPT) {\n    return { music, newPrompt: prompt };\n  }\n\n  // Si deseas removerlo del prompt:\n  // Quitamos el bloque \"Music: ...\", y si hay un punto justo después, lo limpiamos\n  let newPrompt = prompt.slice(0, m.index) + prompt.slice(m.index + m[0].length);\n  // Limpia posibles \" .  \" o dobles espacios\n  newPrompt = newPrompt.replace(/\\s*\\.\\s*/g, '. ').replace(/\\s{2,}/g, ' ').trim();\n  return { music, newPrompt };\n}\n\nconst newItems = [];\n\nfor (const item of items) {\n  const raw = item.json?.output ?? item.json ?? null;\n  if (!raw) continue;\n\n  // 1) Parsear output\n  const data = parseMaybeString(raw);\n\n  // 2) Normalizar a array\n  let arr;\n  if (Array.isArray(data)) {\n    arr = data;\n  } else if (Array.isArray(data?.output)) {\n    arr = data.output;\n  } else if (data && typeof data === 'object' && (data.prompt || data.aspect_ratio || data.voiceover)) {\n    arr = [data];\n  } else {\n    throw new Error('Se esperaba un array o un objeto con prompt/aspect_ratio/voiceover en \"output\".');\n  }\n\n  // 3) Mapear a items n8n (uno por video)\n  arr.forEach((it, idx) => {\n    let prompt = (it.prompt ?? '').toString().trim();\n    let aspect_ratio = normalizeAspect(it.aspect_ratio ?? '');\n    const voiceover = (it.voiceover ?? '').toString().trim();\n\n    if (!prompt) throw new Error(`Falta \"prompt\" en el índice ${idx}`);\n    if (!aspect_ratio) throw new Error(`Falta \"aspect_ratio\" en el índice ${idx}`);\n\n    // Primero, si viene music como campo, úsalo. Si no, extraerlo del prompt.\n    let music = (it.music ?? it.music_style ?? '').toString().trim();\n    if (!music) {\n      const { music: m, newPrompt } = extractMusicFromPrompt(prompt);\n      music = m;\n      prompt = newPrompt; // solo cambia si STRIP_MUSIC_FROM_PROMPT = true\n    }\n\n    newItems.push({\n      json: {\n        prompt,\n        aspect_ratio,\n        voiceover,\n        music,       // ya separado aunque viniera incrustado en el prompt\n        index: idx\n      }\n    });\n  });\n}\n\nreturn newItems;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2336,
+        144
+      ],
+      "id": "87ff28a8-bb1f-4bae-a280-b63f02123dcb",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH data AS (\n  SELECT content, created_at\n  FROM ig_ideas\n  WHERE brand = $1\n    AND formato = 'video'\n  ORDER BY created_at DESC\n  LIMIT 5\n)\nSELECT\n  ROW_NUMBER() OVER (ORDER BY created_at DESC) AS idx,\n  content\nFROM data\nORDER BY idx;\n",
+        "options": {
+          "queryReplacement": "eDEA"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        784,
+        144
+      ],
+      "id": "8f606c89-1dab-456b-b12a-10b2af65d8e2",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "postgres": {
+          "id": "25vNRG11YucIzspL",
+          "name": "\tPostgreSQL Prisma"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Junta todos los items del nodo anterior\nconst rows = items.map(i => i.json);\n\n// Extrae el campo 'content' (o variantes) y limpia\nconst contents = rows\n  .map(r => {\n    const v =\n      r.content ??\n      r.content_sql ??\n      r.idea ??\n      r.title ??\n      null;\n    if (typeof v === 'string') return v.trim();\n    if (v && typeof v === 'object') return JSON.stringify(v);\n    return null;\n  })\n  .filter(Boolean);\n\n// (Opcional) quitar duplicados\nconst unique = [...new Set(contents)];\n\n// (Opcional) tomar solo las últimas N (por ejemplo 5)\nconst N = 5;\nconst lastN = unique.slice(-N);\n\n// Texto enumerado para debug o para el prompt “histórico”\nconst enumerado = lastN.length\n  ? lastN.map((t, i) => `${i + 1}. ${t}`).join('\\n')\n  : '—';\n\n// Devuelve TODO en un único item\nreturn [\n  {\n    json: {\n      brand: 'eDEA',\n      ideas_previas: lastN,          // <-- array con los content\n      ideas_previas_texto: enumerado // <-- string enumerado\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        944,
+        144
+      ],
+      "id": "3ba8ac6f-dc3f-4747-add6-a4ae4327b6b7",
+      "name": "Code2"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO ig_ideas (brand, content, formato)\nVALUES ('eDEA', '{{$('Code').item.json.content_sql.replace(/'/g, \"''\")}}', 'video')\nRETURNING id, brand, formato, content, created_at;\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1632,
+        144
+      ],
+      "id": "3fab8fad-2fde-4366-b981-c6e9f648f3fa",
+      "name": "Execute a SQL query1",
+      "credentials": {
+        "postgres": {
+          "id": "25vNRG11YucIzspL",
+          "name": "\tPostgreSQL Prisma"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Toma todos los ítems de entrada\nconst items = $input.all();\n\n// Opcional para depurar: mira qué claves trae cada item\n// console.log(items.map(i => Object.keys(i.json)));\n\nconst ideas = items\n  .map(i => i.json?.idea)     // toma la propiedad idea\n  .filter(Boolean);           // quita undefined/null\n\nreturn [{ json: { ideas } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1456,
+        144
+      ],
+      "id": "7848be23-967a-42fc-aa32-7341a1923eff",
+      "name": "Code3"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3fe7fc91-0417-41f7-8615-b7b15a480403",
+              "name": "ideas",
+              "value": "={{ $('Code3').item.json.ideas }}",
+              "type": "array"
+            },
+            {
+              "id": "fdc2a333-7ed6-43f7-97f2-8a4da1a8b93a",
+              "name": "context",
+              "value": "={{ $('Edit Fields').first().json.brand_context1 }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1808,
+        144
+      ],
+      "id": "3562fa77-112b-44ae-b857-e572f0dd5e3f",
+      "name": "Edit Fields1",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4448,
+        144
+      ],
+      "id": "6651a92c-f4d2-44ed-a173-0e0836073685",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.replicate.com/v1/models/bytedance/seedance-1-pro/predictions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $env.REPLICATE_API_TOKEN }}"
+            },
+            {
+              "name": "Prefer",
+              "value": "wait"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"input\": {\n    \"prompt\": \"{{ $json.prompt }}\",\n    \"duration\": 10,\n    \"resolution\": \"720p\",\n    \"aspect_ratio\": \"{{ $json.aspect_ratio }}\"\n  }\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2768,
+        -288
+      ],
+      "id": "58957c1c-a2ef-4708-9891-7165c532e0c4",
+      "name": "seedance-1-pro"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.replicate.com/v1/predictions/{{ $('seedance-1-pro').item.json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $env.REPLICATE_API_TOKEN }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3136,
+        -288
+      ],
+      "id": "b4499e31-0596-41e3-b7b9-258a21a839bd",
+      "name": "seedance-1-pro1"
+    },
+    {
+      "parameters": {
+        "operation": "sendVideo",
+        "chatId": "1828117088",
+        "binaryData": true,
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        4640,
+        208
+      ],
+      "id": "33680235-a6fd-4838-9d41-12607c09ea7b",
+      "name": "Send a video",
+      "webhookId": "315eb823-d93f-41c5-a67f-cab5ced280fb",
+      "credentials": {
+        "telegramApi": {
+          "id": "xjzcyIZlePUjaH7v",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.replicate.com/v1/models/minimax/speech-02-turbo/predictions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $env.REPLICATE_API_TOKEN }}"
+            },
+            {
+              "name": "Prefer",
+              "value": "wait"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"input\": {\n    \"text\": \"{{ $json.voiceover }}\",\n    \"pitch\": 0,\n    \"speed\": 1,\n    \"volume\": 1,\n    \"bitrate\": 128000,\n    \"channel\": \"mono\",\n    \"emotion\": \"auto\",\n    \"voice_id\": \"Deep_Voice_Man\",\n    \"sample_rate\": 32000,\n    \"language_boost\": \"Spanish\",\n    \"english_normalization\": true\n  }\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3056,
+        144
+      ],
+      "id": "334bf1d2-56a3-426c-846c-91d97b36f6f1",
+      "name": "speech-02-turbo"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.replicate.com/v1/predictions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $env.REPLICATE_API_TOKEN }}"
+            },
+            {
+              "name": "Prefer",
+              "value": "wait"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"version\": \"671ac645ce5e552cc63a54a2bbff63fcf798043055d2dac5fc9e36a837eedcfb\",\n  \"input\": {\n    \"top_k\": 250,\n    \"top_p\": 0,\n    \"prompt\": \"{{ $json.music }}\",\n    \"duration\": 10,\n    \"temperature\": 1,\n    \"continuation\": false,\n    \"model_version\": \"stereo-large\",\n    \"output_format\": \"mp3\",\n    \"continuation_start\": 0,\n    \"multi_band_diffusion\": false,\n    \"normalization_strategy\": \"peak\",\n    \"classifier_free_guidance\": 3\n  }\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2768,
+        352
+      ],
+      "id": "0df79d25-34dc-4bec-b243-eeeec4451b49",
+      "name": "musicgen"
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2976,
+        -288
+      ],
+      "id": "b3b4b899-749d-4175-a54d-6ea37713350e",
+      "name": "Wait",
+      "webhookId": "69a18252-249a-4201-acc4-658f64d79371"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "2030bf99-b772-49fa-9263-a6c992d09cb3",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "succeeded",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3296,
+        -288
+      ],
+      "id": "c1b4de02-a865-49bf-a725-5858ba86a5cf",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        3568,
+        128
+      ],
+      "id": "7aeb969b-cc53-422b-87ca-e8a680aab92f",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.cloudconvert.com/v2/jobs/{{ $('cloudconvert POST').item.json.data.tasks[0].job_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIxIiwianRpIjoiMWU5NDE2YjYwZGM3ZjU0NTI1ZGY1ODM4NzRiNDExODA0MWQ5OGUxYWQyYTcwODQ1OWNlYmExM2VhNDM3NzE1ZmE2NmIxYjc2YjVhZjZhZTMiLCJpYXQiOjE3NTQ4MzcwNDEuMjYxMDg5LCJuYmYiOjE3NTQ4MzcwNDEuMjYxMDksImV4cCI6NDkxMDUxMDY0MS4yNTU5OTksInN1YiI6IjcyNjI5MzI2Iiwic2NvcGVzIjpbInRhc2sucmVhZCIsInRhc2sud3JpdGUiXX0.mFKBxwSUx6oZAwuSVokEysHAlchrzsHmVkLANqu25y-hdEuIoEAwu5rf69Eaci2lAQjMcFg7BPcSAmOcsTolIFJEKVcm7NBdVXp-BWq2Wk-StmOZTEsEYeMPjVklxNv0mTNtW-Kfyk7Z1iq8hTBbXVnfekLuvShpwL3iQwIrPiqGDKO6kDd1i9yoXkSz5Z_7ka7RdJ_IBXeEW5ePdQiJ4Ap92n8wZ8ieJCVkj4z8mrHxSmfsotHa0iOTqV60iIOzIRxSf-Ns4gY3RQFU_qlMpoIHsk6Q40lfvIAorPAb0pHAwjgNjDQ5rUPb7USHKjn9OrQ6ma1GDysRJa5ZXOOXAlQPgjudb49Hd7is1rwRxmkkFln_qrlQFzKdY2z_cR9LlgskE1PeS6-BzyLToRMym54IqF-GwLZ3AAS8XoaENYwSUfA0-20ztTinHg-35bw3InGcDd2ZyPL2-FKniz8K8Jls7_wewVO2WsX0tv53eJdX1qLSfM1Jo8faJ3rJ7JbdHaUV77twvJHsZNXB5HpARhZDYlkRwYlGviOtbJ-n7sI-xuUj-GG1TUXagOcz01OVc4sikAP_OCmZLNaUVJtXgT_yL981t17I4s-y-l2jc6ieEAoIIC-SPEJUg_kgoep1N4E1F9lBVmIpDl7t6r9dRhvmLsr-O1rkZZMGO0flgbQ"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4096,
+        144
+      ],
+      "id": "368c4e40-d191-4eae-b562-5a9607d36e38",
+      "name": "HTTP Request2"
+    },
+    {
+      "parameters": {
+        "amount": 1,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3920,
+        144
+      ],
+      "id": "ac96584a-3ffc-4e88-b838-4c2febdfcc03",
+      "name": "Wait2",
+      "webhookId": "69a18252-249a-4201-acc4-658f64d79371"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.replicate.com/v1/predictions/{{ $json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $env.REPLICATE_API_TOKEN }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3136,
+        352
+      ],
+      "id": "74f1fe3c-60c1-45fa-8f4f-de45dce81405",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.cloudconvert.com/v2/jobs",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIxIiwianRpIjoiMWU5NDE2YjYwZGM3ZjU0NTI1ZGY1ODM4NzRiNDExODA0MWQ5OGUxYWQyYTcwODQ1OWNlYmExM2VhNDM3NzE1ZmE2NmIxYjc2YjVhZjZhZTMiLCJpYXQiOjE3NTQ4MzcwNDEuMjYxMDg5LCJuYmYiOjE3NTQ4MzcwNDEuMjYxMDksImV4cCI6NDkxMDUxMDY0MS4yNTU5OTksInN1YiI6IjcyNjI5MzI2Iiwic2NvcGVzIjpbInRhc2sucmVhZCIsInRhc2sud3JpdGUiXX0.mFKBxwSUx6oZAwuSVokEysHAlchrzsHmVkLANqu25y-hdEuIoEAwu5rf69Eaci2lAQjMcFg7BPcSAmOcsTolIFJEKVcm7NBdVXp-BWq2Wk-StmOZTEsEYeMPjVklxNv0mTNtW-Kfyk7Z1iq8hTBbXVnfekLuvShpwL3iQwIrPiqGDKO6kDd1i9yoXkSz5Z_7ka7RdJ_IBXeEW5ePdQiJ4Ap92n8wZ8ieJCVkj4z8mrHxSmfsotHa0iOTqV60iIOzIRxSf-Ns4gY3RQFU_qlMpoIHsk6Q40lfvIAorPAb0pHAwjgNjDQ5rUPb7USHKjn9OrQ6ma1GDysRJa5ZXOOXAlQPgjudb49Hd7is1rwRxmkkFln_qrlQFzKdY2z_cR9LlgskE1PeS6-BzyLToRMym54IqF-GwLZ3AAS8XoaENYwSUfA0-20ztTinHg-35bw3InGcDd2ZyPL2-FKniz8K8Jls7_wewVO2WsX0tv53eJdX1qLSfM1Jo8faJ3rJ7JbdHaUV77twvJHsZNXB5HpARhZDYlkRwYlGviOtbJ-n7sI-xuUj-GG1TUXagOcz01OVc4sikAP_OCmZLNaUVJtXgT_yL981t17I4s-y-l2jc6ieEAoIIC-SPEJUg_kgoep1N4E1F9lBVmIpDl7t6r9dRhvmLsr-O1rkZZMGO0flgbQ"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"tasks\": {\n    \"import-video\": {\n      \"operation\": \"import/url\",\n      \"url\": \"{{ $json.output }}\",\n      \"filename\": \"video.mp4\"\n    },\n    \"import-a1\": {\n      \"operation\": \"import/url\",\n      \"url\": \"{{ $('speech-02-turbo').first().json.output }}\",\n      \"filename\": \"a1.mp3\"\n    },\n    \"import-a2\": {\n      \"operation\": \"import/url\",\n      \"url\": \"{{ $('HTTP Request1').first().json.output }}\",\n      \"filename\": \"a2.mp3\"\n    },\n    \"merge\": {\n      \"operation\": \"command\",\n      \"engine\": \"ffmpeg\",\n      \"input\": [\n        \"import-video\",\n        \"import-a1\",\n        \"import-a2\"\n      ],\n      \"command\": \"ffmpeg\",\n      \"arguments\": \"-i /input/import-video/video.mp4 -i /input/import-a1/a1.mp3 -i /input/import-a2/a2.mp3 -filter_complex \\\"[1:a]apad[s1];[2:a]volume=0.4,apad[s2];[s1][s2]amix=inputs=2:duration=longest:dropout_transition=2[a]\\\" -map 0:v -map \\\"[a]\\\" -c:v copy -c:a aac -shortest -map_metadata 0 -movflags +faststart /output/out.mp4\"\n    },\n    \"export\": {\n      \"operation\": \"export/url\",\n      \"input\": \"merge\"\n    }\n  }\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3744,
+        144
+      ],
+      "id": "5565a739-7e05-409c-9df6-5a5b8a09d0b3",
+      "name": "cloudconvert POST"
+    },
+    {
+      "parameters": {
+        "amount": "={{ 5 }}"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2976,
+        352
+      ],
+      "id": "47b921ef-0a28-4549-a377-2de2473efef6",
+      "name": "Wait1",
+      "webhookId": "dabce5fd-86c6-4c46-a4fa-a253506842e1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "355adbdf-8c7c-4e4a-863a-7c31b32e085b",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "succeeded",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3296,
+        352
+      ],
+      "id": "a3d8592b-96c3-4be1-ab5c-2b23ad78a51d",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.replicate.com/v1/models/google/imagen-4/predictions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $env.REPLICATE_API_TOKEN }}"
+            },
+            {
+              "name": "Prefer",
+              "value": "wait"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"input\": {\n    \"prompt\": \"{{ $json.prompt }}\",\n    \"aspect_ratio\": \"{{ $json.aspect_ratio }}\",\n    \"safety_filter_level\": \"block_medium_and_above\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2736,
+        704
+      ],
+      "id": "14c00dd1-0b19-4f77-9cb4-1850922c2fb8",
+      "name": "google-imagen 4"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5",
+          "mode": "list",
+          "cachedResultName": "gpt-5"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        2240,
+        912
+      ],
+      "id": "e0458d3a-b0c5-417f-893a-eb802b488932",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "qRqeWgwWSInHs854",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "x-ai/grok-4",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        2400,
+        912
+      ],
+      "id": "e4e13aa0-a33a-45f8-9dda-756635514dfc",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "QETT8kUiuXjnLbpZ",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You will receive:\n1. An Instagram content idea in Spanish (JSON array in {{ JSON.stringify($json.ideas) }}, each item with fields: type, title, idea, copy, visual, tags).\n2. Brand context: {{ $json.context }}\n\nTask:\nConvert each item from {{ JSON.stringify($json.ideas) }} into a complete, photorealistic English visual prompt for Google Imagen 4, following the System Message rules.\n\nSteps:\n1. Read and understand the “idea” and “visual” fields from each item to extract the key scene elements, mood, and composition.\n2. Enrich with additional real-world photographic details (textures, light behavior, depth, atmosphere).\n3. Align every element with the brand’s visual identity and tone from the provided context.\n4. Output the result strictly in the JSON format defined in the System Message.\n\nInput ideas:\n{{ JSON.stringify($json.ideas) }}\n\nRemember:\n- Keep every scene physically and visually plausible.\n- Use rich photographic language and natural cinematic description.\n- Never insert on-image text.\n",
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "=You are a senior visual marketing and creative direction assistant, specialized in converting Spanish-language Instagram content ideas into rich, vivid, photorealistic English prompts for Google Imagen 4.\n\nYour role:\n- Take the provided idea (in Spanish) and brand context.\n- Transform the idea into a robust, detailed English prompt optimized for Google Imagen 4.\n- Maintain absolute alignment with brand identity, color palette, and tone.\n- Ensure the description reads as a natural, cinematic scene with strong photographic realism.\n- Include negative prompts to remove any text, typography, letters, logos, watermarks, or UI elements from the generated image.\n\nOutput must follow this JSON structure:\n[\n  {\n    \"prompt\": \"Full enriched English visual prompt describing scene, environment, composition, camera feel, lighting, textures, brand-inspired color harmony, and emotional tone. End with explicit negative: 'no text, no typography, no letters, no logos, no watermarks, no UI elements'.\",\n    \"aspect_ratio\": \"9:16 or 1:1\",\n    \"text_guidance\": {\n      \"suggested_caption\": \"Short Spanish caption from the idea's copy (no quotes).\",\n      \"placement\": \"top|center|bottom|left|right|top-left|top-right|bottom-left|bottom-right\",\n      \"safe_margins_pct\": { \"top\": 10, \"bottom\": 12, \"left\": 8, \"right\": 8 },\n      \"max_chars\": 140,\n      \"font_tone\": \"modern, human, readable; high contrast over background\",\n      \"notes\": \"Any Canva layout tip for readability (e.g., 'use semi-transparent overlay on bottom').\"\n    }\n  }\n]\n\nSTRICT RULES:\n- Describe the scene as if it were a real high-end photograph taken with professional gear.\n- Integrate brand palette: soft white (#FFFFF3), deep cocoa brown (#3E2F1C), neon yellow (#FAFF00) for subtle accents, black, warm neutrals.\n- Always specify camera and lens in a natural photographic context (e.g., 'captured with Sony FX3, 50mm lens at f/2.8').\n- Describe lighting conditions, time of day, and atmosphere in detail.\n- Include natural imperfections and sensory elements: steam, reflections, subtle grain, soft motion blur if appropriate.\n- Aspect ratio:\n   - \"9:16\" for stories\n   - \"1:1\" for posts\n- Use the “visual” field from the idea to guide perspective, composition, and lens choice, enriching it further if needed.\n- if you include steam or smoke (for example in beverages or food), it must be very subtle, almost imperceptible, and physically realistic. Avoid thick columns, exaggerated shapes, or stylized forms. The effect should blend naturally with the light and environment, as it would appear in a real photograph taken with a professional lens.",
+          "batching": {}
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        2256,
+        704
+      ],
+      "id": "ba4a9f01-7eff-4173-9d3b-6a75f8455c03",
+      "name": "AI ayudante1"
+    },
+    {
+      "parameters": {
+        "messages": {
+          "message": [
+            {
+              "content": "=You are a senior Instagram content strategist specialized in photorealistic, emotionally engaging content ideas.\n\nOUTPUT CONTRACT (non-negotiable):\n- Return ONLY valid RFC8259 JSON.\n- Do NOT use code fences or backticks.\n- Do NOT include any prose, explanations, role tags, or <think> sections.\n- Do NOT browse, do NOT cite, do NOT include urls, “citations”, or “search_results”.\n- If you cannot comply for any reason, return exactly: {\"ideas\":[]}\n- Language: Spanish (neutral LATAM).\n- Ground strictly on BRAND CONTEXT and USER REQUEST.\n\nNOVELTY CONTRACT (hard):\n- You will be given ideas_previas as JSON. You MUST parse it mentally and EXCLUDE any overlapping motifs, scenes, props, weather, or camera setups.\n- REQUIRED DIFFERENCES vs any idea in ideas_previas: (a) escenario/ubicación, (b) meteorología/atmósfera, (c) objeto/prop clave, (d) ángulo de cámara/plano, (e) gesto/acción.\n- FORBIDDEN motifs if present in ideas_previas: do NOT use them; invent alternatives coherent with the brand.\n- If your draft overlaps >30% with any prior idea, REWRITE it until overlap is <30%.",
+              "role": "system"
+            },
+            {
+              "content": "=# Generación de Ideas FOTORREALISTAS, Narrativas y Alineadas a eDEA (SOLO JSON)\n\nUsa el siguiente contexto y solicitud:\n{\n  \"brand_context1\": {{ $('Edit Fields2').first().json.brand_context1 }},\n  \"user_request\": {{ $('Edit Fields2').first().json.user_request }}\n}\n\nContexto histórico (NO repetir), JSON:\n{{ JSON.stringify(Array.isArray($json.ideas_previas) ? $json.ideas_previas : [$json.ideas_previas]) }}\n\nGenera ideas nuevas cumpliendo el NOVELTY CONTRACT.\n\nREGLAS PRINCIPALES\n1) Fotorealismo narrativo:\n   - Escenas que parezcan fotografiables: coherencia física, materiales reales, texturas (madera, papel, cerámica, metal, vidrio), sombras naturales, reflejos plausibles, ligera profundidad de campo.\n   - Microdetalles sensoriales: vapor tenue, huellas sutiles, brillo natural de pantalla, marcas de uso.\n\n2) Integración de marca (obligatoria):\n   - Paleta eDEA: blanco suave (#FFFFF3), negro, amarillo neón (#FAFF00) en acentos, marrón cacao (#3E2F1C), neutros cálidos.\n   - Estética minimalista y profesional; orden, claridad, “menos ruido, más resultados”; tecnología como habilitador; transición de caos→orden.\n   - Nada saturado, nada cartoon, nada 3D estilizado (salvo que el usuario lo pida).\n\n3) Campo \"visual\" (técnico-natural):\n   - Plano y POV claros (general/medio/primer plano/flat lay; altura de ojos/cenital/contrapicado).\n   - Composición (tercios/diagonal/negativo usable).\n   - Luz real: natural o artificial; dirección (lateral/trasera), dureza (suave/dura), hora del día.\n   - Cámara/lente sugeridos como parte del relato (p.ej., “Sony FX3, lente 50mm f/2.8”).\n   - Atmósfera: cálida, clara, aspiracional; efectos sutiles permitidos (bokeh leve, haze suave, grain leve).\n\n4) Campo \"idea\":\n   - Escribir como si describieras la foto ganadora: una micro-historia del momento, no solo una lista de objetos.\n   - Incluir acción sutil cuando sea posible (transición, gesto, interacción con tecnología).\n\n5) Campo \"copy\":\n   - Tono humano y cercano con un solo gancho claro, sin frases vacías.\n\n6) Originalidad:\n   - Evita clichés: bombillas genéricas, manos sin sentido, texto dentro de la imagen, elementos fantásticos.\n\n7) Si incluyes vapor o humo (por ejemplo en bebidas o comida), debe ser muy sutil, casi imperceptible, y físicamente realista. Evita columnas gruesas, formas exageradas o estilizadas. El efecto debe integrarse de manera natural con la luz y el entorno, como se vería en una fotografía real tomada con lente profesional.\n\nFORMATO DE RESPUESTA (SOLO JSON, sin backticks):\n{\n  \"ideas\": [\n    {\n      \"type\": \"post\" | \"story\",\n      \"title\": \"Título breve y llamativo\",\n      \"idea\": \"Descripción creativa y detallada de la propuesta\",\n      \"copy\": \"Texto humano y directo para acompañar la publicación\",\n      \"visual\": \"Instrucciones visuales fotorrealistas: plano, POV, composición, iluminación, atmósfera, paleta, lente/cámara sugerida\",\n      \"tags\": [\"#Hashtag1\", \"#Hashtag2\", \"#Hashtag3\"]\n    }\n  ]\n}\n\nNotas:\n- La cantidad y tipos dependen de user_request.\n- Mantén factibilidad fotográfica (o IA fotorealista) y coherencia total con el contexto eDEA.\n- PROHIBIDO navegar, citar, devolver <think> o usar fences.\n"
+            }
+          ]
+        },
+        "options": {
+          "maxTokens": 2400,
+          "temperature": 0.7,
+          "topK": 50,
+          "topP": 0.9,
+          "returnImages": false,
+          "returnRelatedQuestions": false
+        },
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.perplexity",
+      "typeVersion": 1,
+      "position": [
+        1104,
+        704
+      ],
+      "id": "da71c8d5-a971-4ae6-a806-f00c62810c06",
+      "name": "Message a model1",
+      "credentials": {
+        "perplexityApi": {
+          "id": "gSM3rwcGUcfmPOTL",
+          "name": "Perplexity account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "documentURL": "https://docs.google.com/document/d/1NeNnw76AYFQcASaye1Qzn1Aaqxb5qAEzV7UrkwZYj4o/edit?usp=sharing"
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        464,
+        704
+      ],
+      "id": "fd69164b-c1dd-4102-8f03-c640a258a0d5",
+      "name": "eDEA_Manual_Interno1",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "QylVCQGs9tzqXQ3w",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8ec31d6d-3f27-4b05-b6d8-8f3cd55cfcec",
+              "name": "user_request",
+              "value": "={{ $('Telegram Trigger').item.json.message.text }}",
+              "type": "string"
+            },
+            {
+              "id": "5f835a57-b8d3-48a5-a568-86c78a91a6c7",
+              "name": "brand_context1",
+              "value": "={{ $json.content }}",
+              "type": "string"
+            },
+            {
+              "id": "6b514b5d-1ea4-4376-87d3-73092045e59a",
+              "name": "sessionId",
+              "value": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        624,
+        704
+      ],
+      "id": "2a3ed0ac-adfc-4f2a-a2ee-7c96ada50c56",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code node — Repara JSON truncado y separa ideas en items\n// Entrada esperada: items[0].json.content (STRING con JSON de { \"ideas\": [ ... ] })\n\nconst raw = String(items?.[0]?.json?.content ?? '');\n\n// --- Utilidades de reparación y escaneo ---\nfunction normalizeInput(s) {\n  // Recorta desde primer { o [ para evitar basura previa\n  const i1 = s.indexOf('{');\n  const i2 = s.indexOf('[');\n  const candidates = [i1, i2].filter(i => i >= 0);\n  if (candidates.length) s = s.slice(Math.min(...candidates));\n  // Limpia nulos y quita caracteres de control comunes\n  return s.replace(/\\u0000/g, '');\n}\n\nfunction repairJsonString(s) {\n  // Cierra comillas/llaves/corchetes y elimina comas colgantes\n  let out = '';\n  const stack = []; // guarda '}' o ']'\n  let inStr = false, esc = false;\n\n  for (let i = 0; i < s.length; i++) {\n    const ch = s[i];\n    out += ch;\n\n    if (inStr) {\n      if (esc) { esc = false; continue; }\n      if (ch === '\\\\') { esc = true; continue; }\n      if (ch === '\"') { inStr = false; }\n      continue;\n    }\n\n    if (ch === '\"') { inStr = true; continue; }\n\n    if (ch === '{') stack.push('}');\n    else if (ch === '[') stack.push(']');\n    else if (ch === '}' || ch === ']') {\n      if (stack.length && stack[stack.length - 1] === ch) {\n        stack.pop();\n      } else {\n        // Cierre inesperado: descartamos ese caracter\n        out = out.slice(0, -1);\n      }\n    }\n  }\n\n  // Si quedó cadena abierta, ciérrala\n  if (inStr) out += '\"';\n\n  // Quita comas antes de cierres existentes\n  out = out.replace(/,(\\s*[}\\]])/g, '$1');\n\n  // Quita coma final si quedó colgando\n  out = out.replace(/,\\s*$/, '');\n\n  // Agrega cierres faltantes en orden inverso\n  while (stack.length) {\n    // Evita coma justo antes del cierre agregado\n    out = out.replace(/,\\s*$/, '');\n    out += stack.pop();\n  }\n\n  // Limpieza final\n  out = out.replace(/,(\\s*[}\\]])/g, '$1');\n  return out;\n}\n\nfunction findMatchingBracket(str, openIdx) {\n  // Encuentra el ']' que cierra un '[' respetando strings y escapes\n  let depth = 0, inStr = false, esc = false;\n  for (let i = openIdx; i < str.length; i++) {\n    const ch = str[i];\n    if (inStr) {\n      if (esc) { esc = false; continue; }\n      if (ch === '\\\\') { esc = true; continue; }\n      if (ch === '\"') inStr = false;\n      continue;\n    }\n    if (ch === '\"') { inStr = true; continue; }\n    if (ch === '[') depth++;\n    else if (ch === ']') {\n      depth--;\n      if (depth === 0) return i;\n    }\n  }\n  return -1; // truncado\n}\n\nfunction findMatchingBrace(str, openIdx) {\n  // Encuentra el '}' que cierra un '{' respetando strings y escapes (o -1 si truncado)\n  let depth = 0, inStr = false, esc = false;\n  for (let i = openIdx; i < str.length; i++) {\n    const ch = str[i];\n    if (inStr) {\n      if (esc) { esc = false; continue; }\n      if (ch === '\\\\') { esc = true; continue; }\n      if (ch === '\"') inStr = false;\n      continue;\n    }\n    if (ch === '\"') { inStr = true; continue; }\n    if (ch === '{') depth++;\n    else if (ch === '}') {\n      depth--;\n      if (depth === 0) return i;\n    }\n  }\n  return -1;\n}\n\nfunction safeJsonParse(str) {\n  try { return JSON.parse(str); } catch { return null; }\n}\n\nfunction pickField(fragment, key) {\n  // Extrae valor string para claves simples: \"key\": \"valor\"\n  const re = new RegExp(`\"${key}\"\\\\s*:\\\\s*\"((?:\\\\\\\\.|[^\"\\\\\\\\])*)\"`, 's');\n  const m = re.exec(fragment);\n  return m ? m[1] : null;\n}\n\nfunction pickTags(fragment) {\n  // Extrae array de \"tags\": [ ... ] aunque esté truncado\n  const k = fragment.indexOf('\"tags\"');\n  if (k === -1) return [];\n  const o = fragment.indexOf('[', k);\n  if (o === -1) return [];\n  let c = findMatchingBracket(fragment, o);\n  if (c === -1) c = fragment.length - 1; // truncado: usamos hasta el final\n  const slice = repairJsonString(fragment.slice(o, c + 1)); // intenta cerrar el array\n  const arr = safeJsonParse(slice);\n  if (Array.isArray(arr)) return arr;\n  // Fallback: extraer comillas\n  const out = [];\n  const reg = /\"([^\"\\\\]*(?:\\\\.[^\"\\\\]*)*)\"/g;\n  let m;\n  while ((m = reg.exec(slice))) out.push(m[1]);\n  return out;\n}\n\n// --- Proceso principal ---\n// 1) Normaliza y repara el string bruto\nlet s = normalizeInput(raw);\ns = repairJsonString(s);\n\n// 2) Localiza el array de ideas\nconst ideasKey = s.indexOf('\"ideas\"');\nif (ideasKey === -1) {\n  return [{ json: { error: 'No se encontró la clave \"ideas\" en content', preview: s.slice(0, 400) } }];\n}\nconst openBracket = s.indexOf('[', ideasKey);\nif (openBracket === -1) {\n  return [{ json: { error: 'No se encontró \"[\" después de \"ideas\"', preview: s.slice(0, 400) } }];\n}\nlet closeBracket = findMatchingBracket(s, openBracket);\nif (closeBracket === -1) closeBracket = s.length - 1; // array truncado\n\n// 3) Recorre el array y separa cada objeto (idea)\nconst arrSlice = s.slice(openBracket, closeBracket + 1);\n// Escaneo de objetos dentro del array\nconst results = [];\nlet i = 0;\nwhile (i < arrSlice.length) {\n  // Busca siguiente objeto\n  const objStartRel = arrSlice.indexOf('{', i);\n  if (objStartRel === -1) break;\n  const objStart = objStartRel;\n\n  let objEndRel = findMatchingBrace(arrSlice, objStart);\n  if (objEndRel === -1) {\n    // Truncado: toma hasta el final y repara como objeto\n    objEndRel = arrSlice.length - 1;\n  }\n  const fragmentRaw = arrSlice.slice(objStart, objEndRel + 1);\n  const fragmentFixed = repairJsonString(fragmentRaw);\n\n  // Intenta parsear objeto ya reparado\n  let obj = safeJsonParse(fragmentFixed);\n\n  // Si aún falla, extrae campos con regex\n  if (!obj || typeof obj !== 'object') {\n    obj = {\n      type:   pickField(fragmentFixed, 'type'),\n      title:  pickField(fragmentFixed, 'title'),\n      idea:   pickField(fragmentFixed, 'idea'),\n      copy:   pickField(fragmentFixed, 'copy'),\n      visual: pickField(fragmentFixed, 'visual'),\n      tags:   pickTags(fragmentFixed),\n    };\n  } else {\n    // Asegura tags aunque el parser dio objeto\n    if (!Array.isArray(obj.tags)) obj.tags = pickTags(fragmentFixed);\n  }\n\n  results.push({ json: obj });\n\n  // Avanza: salta coma si existe\n  i = objEndRel + 1;\n  while (i < arrSlice.length && /\\s|,/.test(arrSlice[i])) i++;\n}\n\n// 4) Salida\nif (results.length === 0) {\n  return [{ json: { error: 'No se pudieron extraer ideas', preview: s.slice(0, 400) } }];\n}\nreturn results;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1424,
+        704
+      ],
+      "id": "5b2e2e33-9cde-4f1d-9615-f4e8fc2d2d7f",
+      "name": "Code4"
+    },
+    {
+      "parameters": {
+        "jsCode": "// === Utilidad: parseo robusto de JSON o string con fences ===\nfunction parseMaybeString(raw) {\n  if (typeof raw === 'string') {\n    const cleaned = raw\n      .replace(/^```json\\s*/i, '')\n      .replace(/^```\\s*/i, '')\n      .replace(/\\s*```$/i, '')\n      .trim();\n    return JSON.parse(cleaned);\n  }\n  return raw; // ya es objeto/array\n}\n\nconst newItems = [];\n\nfor (const item of items) {\n  // El agente suele dejar el resultado en item.json.output\n  const raw = item.json?.output ?? item.json ?? null;\n  if (!raw) continue;\n\n  // 1) Parsear output\n  let data = parseMaybeString(raw);\n\n  // 2) Normalizar a array de {prompt, aspect_ratio, text_guidance}\n  let arr;\n  if (Array.isArray(data)) {\n    arr = data;\n  } else if (Array.isArray(data?.output)) {\n    arr = data.output;\n  } else if (data && typeof data === 'object' && (data.prompt || data.aspect_ratio)) {\n    arr = [data];\n  } else {\n    throw new Error('Expected an array or an object with prompt/aspect_ratio in \"output\".');\n  }\n\n  // 3) Mapear a items n8n (uno por imagen)\n  arr.forEach((it, idx) => {\n    const prompt = (it.prompt ?? '').toString().trim();\n    const aspect = (it.aspect_ratio ?? '').toString().trim();\n    const text_guidance = it.text_guidance ?? null;\n\n    if (!prompt) throw new Error(`Missing \"prompt\" at index ${idx}`);\n    if (!aspect) throw new Error(`Missing \"aspect_ratio\" at index ${idx}`);\n\n    newItems.push({\n      json: {\n        prompt,\n        aspect_ratio: aspect,\n        text_guidance,\n        index: idx\n      }\n    });\n  });\n}\n\nreturn newItems;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2576,
+        704
+      ],
+      "id": "3ef5cf8e-2d05-49d1-a9ac-3811dfc74fb4",
+      "name": "Code5"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH data AS (\n  SELECT content, created_at\n  FROM ig_ideas\n  WHERE brand = $1\n    AND formato = 'imagen'\n  ORDER BY created_at DESC\n  LIMIT 5\n)\nSELECT\n  ROW_NUMBER() OVER (ORDER BY created_at DESC) AS idx,\n  content\nFROM data\nORDER BY idx;\n",
+        "options": {
+          "queryReplacement": "eDEA"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        784,
+        704
+      ],
+      "id": "5e57093f-7207-4cb5-9764-077e56f7f479",
+      "name": "Execute a SQL query2",
+      "credentials": {
+        "postgres": {
+          "id": "25vNRG11YucIzspL",
+          "name": "\tPostgreSQL Prisma"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const texts = items\n  .map(i => String(i.json.title ?? i.json.content ?? '').trim())\n  .filter(t => t.length > 0);\n\n// Normaliza y elimina duplicados (espacios repetidos, mayúsculas/minúsculas, etc.)\nconst unique = Array.from(\n  new Map(\n    texts.map(t => [t.replace(/\\s+/g, ' ').trim().toLowerCase(), t.trim()])\n  ).values()\n);\n\nreturn [{\n  json: {\n    brand: 'eDEA',\n    ideas_previas: unique,\n    ideas_previas_texto: unique.length\n      ? unique.map((t, i) => `${i + 1}. ${t}`).join('\\n')\n      : '—'\n  },\n  // Para quitar el warning y mantener el emparejamiento con todos los inputs\n  pairedItem: items.map((_, idx) => ({ item: idx }))\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        944,
+        704
+      ],
+      "id": "f8c88b8a-5278-4673-ab08-11917bf7d86b",
+      "name": "Code6"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO ig_ideas (brand, content, formato)\nVALUES ('eDEA', '{{ $json.content_sql }}', 'imagen')\nRETURNING id, brand, formato, content, created_at;\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1920,
+        704
+      ],
+      "id": "df6102dc-2bd1-4f37-b04d-7e5269e78157",
+      "name": "Execute a SQL query3",
+      "credentials": {
+        "postgres": {
+          "id": "25vNRG11YucIzspL",
+          "name": "\tPostgreSQL Prisma"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3fe7fc91-0417-41f7-8615-b7b15a480403",
+              "name": "ideas",
+              "value": "={{ $('Code8').item.json.idea }}",
+              "type": "object"
+            },
+            {
+              "id": "205a9537-dc5c-47d3-be68-a86d80462fab",
+              "name": "context",
+              "value": "={{ $('eDEA_Manual_Interno1').item.json.content }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2080,
+        704
+      ],
+      "id": "c5eaa8ad-62a9-4231-b472-342cc41df1c2",
+      "name": "Edit Fields3",
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.output }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2912,
+        704
+      ],
+      "id": "62613df5-c534-4d83-abda-7476aa98f26b",
+      "name": "HTTP Request3"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5dd12d00-0189-4201-be6a-2cd10820afbe",
+              "leftValue": "={{ $json.command }}",
+              "rightValue": "video",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        208,
+        432
+      ],
+      "id": "71ea167b-62a2-4deb-8976-f175ccef541c",
+      "name": "If3"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "1d134b2e-e8d7-42ad-8e14-330459578a86",
+              "leftValue": "={{ $json.aspect_ratio }}",
+              "rightValue": "9:16",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2576,
+        -176
+      ],
+      "id": "64f6b2c8-e7f8-443a-8dcd-4f038fd3a227",
+      "name": "If4"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.replicate.com/v1/models/minimax/hailuo-02/predictions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $env.REPLICATE_API_TOKEN }}"
+            },
+            {
+              "name": "Prefer",
+              "value": "wait"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"input\": {\n    \"prompt\": \"{{ $json.prompt }}\",\n    \"duration\": 10,\n    \"resolution\": \"768p\",\n    \"prompt_optimizer\": true\n  }\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2768,
+        -64
+      ],
+      "id": "b77702af-099d-4f9c-9d38-7fc343e27639",
+      "name": "seedance-1-pro2"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.replicate.com/v1/predictions/{{ $json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $env.REPLICATE_API_TOKEN }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3136,
+        -64
+      ],
+      "id": "34db6433-0315-4b3f-95ca-cd891733a6ac",
+      "name": "seedance-1-pro3"
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2976,
+        -64
+      ],
+      "id": "c8098e65-7933-467e-94f8-c7247b5a4921",
+      "name": "Wait3",
+      "webhookId": "69a18252-249a-4201-acc4-658f64d79371"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "2030bf99-b772-49fa-9263-a6c992d09cb3",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "succeeded",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3296,
+        -64
+      ],
+      "id": "17ce6f9d-e214-413c-99e3-a051c4a733ba",
+      "name": "If5"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=Eres un traductor de solicitudes a comandos estandarizados para un sistema de generación.\n\nReglas:\n- Responde SOLO con líneas de texto, sin explicaciones.\n- Cada línea sigue exactamente este formato:\n  genera {N} {videos|imagenes} en formato {ASPECT_RATIO}[: sobre {TEMA}]\n- Usa números en dígitos (ej.: 2, 5, 10).\n- Inferencias:\n  * \"historias\" ⇒ formato 9:16\n  * \"post\" ⇒ formato 4:5 (salvo que el usuario indique otro)\n- Si el usuario da un tema para una parte, incluye “: sobre …” SOLO en esa línea.\n- Agrupa por tipo y formato cuando sea posible (p.ej., “5 historias (2 videos y 3 imágenes)” ⇒\n  “genera 2 videos en formato 9:16”\n  “genera 3 imagenes en formato 9:16”).\n- Ortografía exacta: usa “imagenes” (sin tilde) y “videos” (sin tilde). Usa formatos como 9:16, 4:5, 1:1.\n\nEjemplos:\nUsuario: \"Necesito una planificación semanal con dos videos para historias de Instagram, cuatro publicaciones, y cuatro imágenes para historias.\"\nSalida:\ngenera 2 videos en formato 9:16\ngenera 4 imagenes en formato 4:5\ngenera 4 imagenes en formato 9:16\n\nUsuario: \"5 historias (2 videos y 3 imágenes). 2 post, ambos imágenes.\"\nSalida:\ngenera 2 videos en formato 9:16\ngenera 3 imagenes en formato 9:16\ngenera 2 imagenes en formato 4:5\n"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        -272,
+        432
+      ],
+      "id": "f4299b25-ff5b-4115-8b5f-a29b2034f5fa",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1) Tomar texto del LLM\nconst raw =\n  $json?.choices?.[0]?.message?.content ??\n  $json?.content ?? $json?.text ?? '';\n\nif (!raw || !String(raw).trim()) {\n  return [{ json: { error: 'Sin salida del LLM' } }];\n}\n\n// 2) Parsear líneas tipo:\n//    genera N {videos|imagenes} en formato A:B [sobre|con TEMA]\nconst lines = String(raw)\n  .split(/\\r?\\n/)\n  .map(s => s.trim())\n  .filter(Boolean);\n\nconst re = /^genera\\s+(\\d+)\\s+(videos?|imagenes?)\\s+en\\s+formato\\s+(\\d+:\\d+)(?:\\s*(?::\\s*sobre|con)\\s+(.+))?$/i;\n\n// 3) Agrupar por (type + aspect_ratio + topic)\nconst groups = new Map();\n\nfor (const line of lines) {\n  const m = line.match(re);\n  if (!m) continue;\n\n  const count = parseInt(m[1], 10);\n  let kind = m[2].toLowerCase();          // videos | imagenes | video | imagen\n  const ar   = m[3];\n  const topicRaw = (m[4] || '').trim().replace(/[.，,;:]+$/,''); // limpia puntas\n\n  // normaliza singular/plural\n  const type = (kind.startsWith('video')) ? 'video' : 'image';\n  const kindPlural = (type === 'video') ? 'videos' : 'imagenes';\n  const routing = (type === 'video') ? 'video' : 'imagen';\n\n  const topic = topicRaw; // \"\" si no hay\n\n  const key = `${type}|${ar}|${topic}`;\n  const prev = groups.get(key) || { count: 0, type, kindPlural, routing, ar, topic };\n  prev.count += Math.max(0, count);\n  groups.set(key, prev);\n}\n\n// 4) Salida: 1 item por grupo\nconst out = Array.from(groups.values()).map(g => {\n  const command =\n    `genera ${g.count} ${g.kindPlural} en formato ${g.ar}` +\n    (g.topic ? ` con ${g.topic}` : '');\n\n  return {\n    json: {\n      routing: g.routing,          // 'video' | 'imagen' para tu IF\n      type: g.type,                // 'video' | 'image'\n      aspect_ratio: g.ar,\n      topic: g.topic || '',\n      count: g.count,              // cuántas piezas\n      command,                     // comando agregado (humano)\n      unit_command:\n        `genera 1 ${g.kindPlural} en formato ${g.ar}` +\n        (g.topic ? ` con ${g.topic}` : '')\n    }\n  };\n});\n\nif (!out.length) {\n  return [{ json: { error: 'Ninguna línea válida', raw } }];\n}\n\nreturn out;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -16,
+        432
+      ],
+      "id": "5367f358-e94e-4fbf-af0f-a656b2611c8d",
+      "name": "Code7"
+    },
+    {
+      "parameters": {
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "15cm38TF5zusBczLLXPq0uwbzLYYNfbNR",
+          "mode": "list",
+          "cachedResultName": "Contenido eDEA",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/15cm38TF5zusBczLLXPq0uwbzLYYNfbNR"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        3136,
+        608
+      ],
+      "id": "dce59595-dd22-4eb3-9b23-1eda18eb6dfe",
+      "name": "Upload file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "yvl6XOpC2Ng8ASAD",
+          "name": "Google Drive account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "15cm38TF5zusBczLLXPq0uwbzLYYNfbNR",
+          "mode": "list",
+          "cachedResultName": "Contenido eDEA",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/15cm38TF5zusBczLLXPq0uwbzLYYNfbNR"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        4640,
+        64
+      ],
+      "id": "5c029662-0967-45da-9b0b-4fbed1ac5b9e",
+      "name": "Upload file1",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "yvl6XOpC2Ng8ASAD",
+          "name": "Google Drive account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "584038f5-0f41-42ca-b416-fe106dffa4df",
+              "name": "content",
+              "value": "={{ $json.choices[0].message.content }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1264,
+        704
+      ],
+      "id": "d142f6fd-44fa-424a-a150-5a82cbd1a1ad",
+      "name": "Edit Fields4"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ff608c87-345d-48b5-8acf-ba596d92a1c8",
+              "name": "content_sql",
+              "value": "={{ $json.idea.idea }}. {{ $json.idea.visual }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1760,
+        704
+      ],
+      "id": "5ad6ceb5-4d67-4866-8e58-d8e016a9e9de",
+      "name": "Edit Fields5"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Entrada: items con { type, title, idea, copy, visual, tags }\n// Salida: cada item tendrá { idea: { type, title, idea, copy, visual, tags } }\n\nreturn items.map(item => {\n  return {\n    json: {\n      idea: {\n        type: item.json.type,\n        title: item.json.title,\n        idea: item.json.idea,\n        copy: item.json.copy,\n        visual: item.json.visual,\n        tags: item.json.tags\n      }\n    }\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1584,
+        704
+      ],
+      "id": "0ff4d12e-0fb1-44f3-9682-002c4be2c3cb",
+      "name": "Code8"
+    },
+    {
+      "parameters": {
+        "operation": "sendPhoto",
+        "chatId": "1828117088",
+        "binaryData": true,
+        "additionalFields": {
+          "caption": "={{ $('Code5').item.json.text_guidance.suggested_caption }}"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        3136,
+        800
+      ],
+      "id": "03992985-f1a8-4069-a5f2-781c06a31ac9",
+      "name": "Send a photo message",
+      "webhookId": "315eb823-d93f-41c5-a67f-cab5ced280fb",
+      "credentials": {
+        "telegramApi": {
+          "id": "xjzcyIZlePUjaH7v",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "messages": {
+          "message": [
+            {
+              "content": "=You are a senior Instagram video content strategist specialized in creating photorealistic 10-second micro-concepts for brands.\n\nOUTPUT CONTRACT:\n- Return ONLY valid JSON (RFC8259).\n- Do NOT use code fences, markdown, or extra prose.\n- Do NOT browse the web, do NOT add citations, do NOT include URLs, “citations”, or “search_results”.\n- Ground strictly on the provided BRAND CONTEXT and USER REQUEST.\n- Language: Spanish (neutral LATAM).\n",
+              "role": "system"
+            },
+            {
+              "content": "=Modelo objetivo: **bytedance/seedance-1-pro**\n\nObjetivo:\nProponer micro-conceptos de video de 10 segundos coherentes con la identidad de eDEA, con estética fotorrealista y efectos plausibles (motion blur sutil, lens flares suaves, partículas de polvo, light leaks discretos).\n\nUsa el contexto y la solicitud del usuario provistos a continuación en formato JSON:\n{\n  \"brand_context1\": {{ $('Edit Fields').first().json.brand_context1 }},\n  \"user_request\": {{ $('Edit Fields').first().json.user_request }}\n}\n\n## HISTÓRICO (NO REUTILIZAR)\nEste es un listado de ideas anteriores de eDEA. NO repitas, NO reformules ni varíes ligeramente estas ideas; crea algo completamente nuevo:\n{{ JSON.stringify(Array.isArray($json.ideas_previas) ? $json.ideas_previas : [$json.ideas_previas]) }}\n\n## REGLAS DE NOVEDAD (OBLIGATORIAS)\n1. La idea debe diferir del histórico en al menos 4 de estos 6 aspectos: {concepto central, escenario, hora del día, cámara/lente, iluminación, texto en pantalla}.\n2. Prohibido reutilizar los mismos lemas/textos, ubicaciones y encuadres.\n3. No repetir exactamente la misma atmósfera o paleta de colores.\n4. No reutilizar los mismos elementos narrativos (ej. “persona frente a laptop en oficina”).\n\n## REGLAS EXTRAS (VIDEO)\n1. **Duración fija**: 10 s por pieza.\n2. **Cortes**: permitidos si son fluidos y coherentes.\n3. **Cinematografía**: define plano, focal/lente, apertura estimada, POV, movimiento de cámara, y velocidad percibida.\n4. **Iluminación**: realista; indicar fuente, dirección y hora del día si aplica.\n5. **Atmósfera y VFX**: solo efectos discretos y verosímiles (partículas, glow suave, reflejos).\n6. **Texto en pantalla (opcional)**: breve, alto contraste, ubicación precisa; nunca tapa el sujeto principal.\n7. **Audio (opcional)**: describe ambiente o música sugerida en una frase.\n8. **Formato**: 9:16 para stories o 4:5 para feed, salvo que el usuario pida otro.\n9. Si incluyes vapor o humo (por ejemplo en bebidas o comida), debe ser muy sutil, casi imperceptible, y físicamente realista. Evita columnas gruesas, formas exageradas o estilizadas. El efecto debe integrarse naturalmente con la luz y el entorno, como se vería en una fotografía real tomada con lente profesional.\n\n## FORMATO DE RESPUESTA\nDevuelve SOLO JSON con esta estructura:\n{\n  \"ideas\": [\n    {\n      \"type\": \"video\",\n      \"duration_seconds\": 10,\n      \"aspect_ratio\": \"9:16\" | \"4:5\",\n      \"title\": \"Título breve\",\n      \"concept\": \"Qué comunica y por qué conecta con eDEA\",\n      \"shot\": {\n        \"framing\": \"plano general | medio | primer plano | flat lay\",\n        \"camera\": \"lente sugerida (35mm/50mm), apertura estimada (f/2.8), POV\",\n        \"movement\": \"pan suave izquierda→derecha | dolly-in lento | handheld estable\",\n        \"lighting\": \"natural lateral suave al atardecer | key suave + fill\",\n        \"environment\": \"descripción realista del espacio y props\"\n      },\n      \"vfx\": \"opcional, sutil y plausible (ej. partículas de polvo en contraluz)\",\n      \"screen_text\": {\n        \"enabled\": true | false,\n        \"text\": \"Copy muy breve\",\n        \"position\": \"inferior derecha | centrado\",\n        \"style\": \"tipografía limpia, alto contraste\"\n      },\n      \"audio\": \"ambiente urbano suave | piano minimal | sin diálogos\",\n      \"tags\": [\"#Etiqueta1\", \"#Etiqueta2\"]\n    }\n  ]\n}\n\nNotas:\n- Si `user_request` no especifica formato, genera 2 opciones: una 9:16 y otra 4:5.\n- Evita cortes agresivos; prioriza una acción clara y un único sujeto o gesto destacado.\n- Todo debe ser factible de producir como video real o con generador IA de enfoque fotográfico.\n"
+            }
+          ]
+        },
+        "options": {
+          "maxTokens": 2400,
+          "temperature": 0.7,
+          "topK": 50,
+          "topP": 0.9,
+          "returnImages": false,
+          "returnRelatedQuestions": false
+        },
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.perplexity",
+      "typeVersion": 1,
+      "position": [
+        1104,
+        144
+      ],
+      "id": "1b57a519-64ae-40cc-93b3-c325c0b280c3",
+      "name": "Message a model2",
+      "credentials": {
+        "perplexityApi": {
+          "id": "gSM3rwcGUcfmPOTL",
+          "name": "Perplexity account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Cada item trae un job de CloudConvert con .data.tasks\nconst out = [];\n\nfor (const it of items) {\n  const job = it.json?.data || it.json;         // soporta ambas formas\n  const tasks = job?.tasks || [];\n\n  // Busca el task de export (nombre o tipo)\n  const tExport = tasks.find(t =>\n    t?.name === 'export' ||\n    (t?.operation && String(t.operation).includes('export'))\n  );\n\n  const files = tExport?.result?.files || [];\n\n  for (const f of files) {\n    const url = (f.url || '').trim();\n    if (!url) continue;\n    out.push({\n      json: {\n        url,\n        filename: f.filename || f.file || 'output.mp4',   // opcional\n        region: f.region || null,                          // debug\n      }\n    });\n  }\n}\n\nif (out.length === 0) {\n  throw new Error('No export task URLs found. Revisa que el job esté \"finished\" y que exista el task \"export\".');\n}\n\nreturn out;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4272,
+        144
+      ],
+      "id": "6622f38d-6478-436e-b115-3dd9c5ca9ffb",
+      "name": "Code9"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        -416,
+        1056
+      ],
+      "id": "6e2f98d7-0437-42bc-9acf-4115cbbf079d",
+      "name": "Error Trigger"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -304,
+        656
+      ],
+      "id": "9a9266fb-c6b1-4e45-81ef-a31715c06625",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "qRqeWgwWSInHs854",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "1828117088",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        64,
+        1056
+      ],
+      "id": "dbec6b80-8c92-4cc4-8a60-17a9dfbcb9ba",
+      "name": "Send a text message",
+      "webhookId": "315eb823-d93f-41c5-a67f-cab5ced280fb",
+      "credentials": {
+        "telegramApi": {
+          "id": "xjzcyIZlePUjaH7v",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ JSON.stringify($json.execution) }}\n",
+        "options": {
+          "systemMessage": "You are an AI assistant specialized in debugging and automation error analysis.\n\nYou will receive a JSON object with error data from an n8n workflow's Error Trigger.\n\nTASK:\n1. Summarize what happened in plain Spanish (2-3 sentences).\n2. Identify the node that failed and why, based on the message and stack trace.\n3. Suggest specific actions to fix the error or prevent it in the future.\n4. If relevant, include the execution URL to help the user debug faster.\n\nINPUT:\n{{ JSON.stringify($json.execution) }}\n\nOUTPUT FORMAT (in Spanish):\n---\n📋 Resumen:\n[Breve descripción de lo ocurrido]\n\n❌ Nodo con error:\n[Nombre del nodo]\n\n💡 Posible causa:\n[Explicación breve]\n\n🛠️ Sugerencias:\n- [Solución 1]\n- [Solución 2]\n- [Solución opcional]\n\n🔗 Ejecución:\n[URL de la ejecución]\n---\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -240,
+        1056
+      ],
+      "id": "9029d581-a17c-4ee7-9982-cf3cdf91ce5f",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -256,
+        1232
+      ],
+      "id": "893a3489-194d-4b5f-9902-3170c4da5472",
+      "name": "OpenAI Chat Model2",
+      "credentials": {
+        "openAiApi": {
+          "id": "qRqeWgwWSInHs854",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -480,
+        432
+      ],
+      "id": "71dfebc2-6c1e-46f6-8649-b7ac87448ddb",
+      "name": "When chat message received",
+      "webhookId": "aa9efefe-b4e8-4838-8ac5-fa01dbf7aba3",
+      "disabled": true
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Chat Model9": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI ayudante",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI ayudante",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "AI ayudante": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "eDEA_Manual_Interno": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Code3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "musicgen",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "speech-02-turbo",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "If4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "Message a model2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code3": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "AI ayudante",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Upload file1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send a video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "seedance-1-pro": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "seedance-1-pro1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "speech-02-turbo": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "musicgen": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "seedance-1-pro1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "cloudconvert POST",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "Code9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "cloudconvert POST": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ],
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "google-imagen 4": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI ayudante1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI ayudante1",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "AI ayudante1": {
+      "main": [
+        [
+          {
+            "node": "Code5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "eDEA_Manual_Interno1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code4": {
+      "main": [
+        [
+          {
+            "node": "Code8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code5": {
+      "main": [
+        [
+          {
+            "node": "google-imagen 4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query2": {
+      "main": [
+        [
+          {
+            "node": "Code6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code6": {
+      "main": [
+        [
+          {
+            "node": "Message a model1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query3": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields3": {
+      "main": [
+        [
+          {
+            "node": "AI ayudante1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request3": {
+      "main": [
+        [
+          {
+            "node": "Upload file",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send a photo message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If3": {
+      "main": [
+        [
+          {
+            "node": "eDEA_Manual_Interno",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "eDEA_Manual_Interno1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If4": {
+      "main": [
+        [
+          {
+            "node": "seedance-1-pro",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "seedance-1-pro2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "seedance-1-pro2": {
+      "main": [
+        [
+          {
+            "node": "Wait3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "seedance-1-pro3": {
+      "main": [
+        [
+          {
+            "node": "If5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait3": {
+      "main": [
+        [
+          {
+            "node": "seedance-1-pro3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If5": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Code7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code7": {
+      "main": [
+        [
+          {
+            "node": "If3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload file": {
+      "main": [
+        []
+      ]
+    },
+    "Upload file1": {
+      "main": [
+        []
+      ]
+    },
+    "Edit Fields4": {
+      "main": [
+        [
+          {
+            "node": "Code4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields5": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code8": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model2": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code9": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e58d5aca-7b88-4c91-82c9-80eb26fc3a79",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c0c550501b7896ab0eff6edacfb19ee553f2da638e369fa0272020aa7d2ebf5a"
+  },
+  "id": "SIPpYvUV6RuAiQAt",
+  "tags": []
+}
