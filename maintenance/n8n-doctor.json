@@ -1,0 +1,538 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "doctor-ingeniero-1996",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        176,
+        0
+      ],
+      "id": "1a1cfe88-3bf3-41bc-bd81-3985b6e46fdd",
+      "name": "Webhook",
+      "webhookId": "2dd5bbd6-c668-4e70-a28c-6d60b79a8105"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.headers.host }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        416,
+        192
+      ],
+      "id": "c3266fad-62cd-4502-9187-33cd7f78251f",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"analysis\": \"Detailed technical explanation of what is happening.\",\n  \"commands_executed\": [\n    \"ps -eo pid,user,%cpu,%mem,cmd --sort=-%cpu | head -n 10\",\n    \"free -h\"\n  ],\n  \"requires_intervention\": false\n}\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        720,
+        192
+      ],
+      "id": "3e6ff698-ed31-43fc-8821-a6b69f8a0f5b",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "=claude-3-5-haiku-20241022",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        288,
+        192
+      ],
+      "id": "bd998e56-3cbb-4d0b-a09a-d46fe5881479",
+      "name": "Anthropic Chat Model",
+      "credentials": {
+        "anthropicApi": {
+          "id": "0Dptar29boDNBfDZ",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "Executes READ-ONLY shell commands for diagnosis (ps, df, free, tail). Input: cmd (string)...",
+        "workflowId": {
+          "__rl": true,
+          "value": "d1tKE26vqicwBNkk",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/d1tKE26vqicwBNkk",
+          "cachedResultName": "My workflow 12"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        560,
+        192
+      ],
+      "id": "72daec85-d794-4df5-8898-d83a2b2a4704",
+      "name": "linux_terminal"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "04c0ed0d-09e6-42e5-832d-ff16c17fc730",
+              "leftValue": "={{ $json.output.requires_intervention }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        768,
+        0
+      ],
+      "id": "bdb71615-1fd6-4dd9-865e-deeacf419216",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=ALERT RECEIVED:\n- Type: {{ $json.body.alert.name }}\n- Status: {{ $json.body.alert.state.status }}\n- Current Value: {{ $json.body.alert.state.value_str }}\n- Chart Context: {{ $json.body.alert.context }}\n- Timestamp: {{ $json.body.alert.triggered_at }}\n\nPlease start the diagnostic protocol immediately.\n",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "### ROLE\nYou are a **Senior Linux Forensic Analyst**.\nYour goal is to DIAGNOSE any infrastructure alert on server 'demagogia' (CPU, RAM, Disk, Network, Services).\nYou are strictly **READ-ONLY**.\n\n### DYNAMIC DIAGNOSTIC PROTOCOL\nAnalyze the `Alert Context` first, then choose the right tools:\n\n1. **IF CPU/RAM Alert:**\n   - Check processes: `ps -eo pid,user,%cpu,%mem,cmd --sort=-%cpu | head -n 10`\n   - Check memory: `free -h`\n\n2. **IF DISK/STORAGE Alert:**\n   - Check mounts: `df -h`\n   - Find large files (only in safe paths like /tmp or /var/log): `du -ah /tmp | sort -rh | head -n 5`\n   - **SAFETY:** NEVER scan the entire root `/`.\n\n3. **IF SERVICE/NETWORK Alert:**\n   - Check status: `systemctl status <service_name>`\n   - Check ports: `ss -tulnp` or `netstat -tulnp`\n   - Check logs: `tail -n 50 /var/log/syslog`\n\n### DECISION LOGIC\nSet `requires_intervention: true` if:\n- A specific actionable fix is identified (e.g., \"Kill PID 1234\", \"Delete /tmp/garbage.log\", \"Restart nginx\").\n- System stability is threatened.\n\n### OUTPUT FORMAT (JSON)\n{\n  \"analysis\": \"Explanation of the root cause (e.g., 'Disk /tmp is 100% full due to log_basura.img').\",\n  \"recommended_action\": \"Exact mitigation strategy (e.g., 'Delete /tmp/log_basura.img' or 'Kill process 555').\",\n  \"commands_executed\": [\"df -h\", \"du -ah ...\"],\n  \"requires_intervention\": true/false\n}\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        416,
+        0
+      ],
+      "id": "ba88b466-8a6e-49b5-bcb2-c80f113d35ef",
+      "name": "Analizador"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"mitigation_status\": \"success\",\n  \"action_log\": [\n    \"Executed: kill -9 814328\",\n    \"Executed: kill -9 814327\",\n    \"Verification: Process 814328 not found\"\n  ],\n  \"final_message\": \"Threat neutralized. CPU usage returning to normal.\"\n}\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1344,
+        272
+      ],
+      "id": "0b567bb5-606e-42f7-9383-ca341695c8af",
+      "name": "Structured Output Parser1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "=claude-3-5-haiku-20241022",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        912,
+        272
+      ],
+      "id": "f68582fa-bc99-442f-89cb-8b97fac4b00c",
+      "name": "Anthropic Chat Model1",
+      "credentials": {
+        "anthropicApi": {
+          "id": "0Dptar29boDNBfDZ",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "Executes shell commands to MITIGATE system issues.\nUse this tool to terminate processes (kill) or restart services.\nInput: cmd (string).",
+        "workflowId": {
+          "__rl": true,
+          "value": "d1tKE26vqicwBNkk",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/d1tKE26vqicwBNkk",
+          "cachedResultName": "My workflow 12"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        1184,
+        272
+      ],
+      "id": "50a696b6-1dd9-4594-84d2-0c708a08e960",
+      "name": "linux_terminal1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=ALERT ANALYSIS RECEIVED:\n{{ $json.output.analysis }}\n\nACTION REQUIRED: Please mitigate this issue immediately based on the analysis above.\n",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=### ROLE\nYou are the **Lead Remediation Engineer**.\nYour job is to EXECUTE the fix recommended by the Analyst.\n\n### PERMITTED ACTIONS\n1. **Process Management:** `kill -9 <PID>` (For zombie/stuck processes).\n2. **File Cleanup:** `rm <path>` (ONLY for files in `/tmp/`, `/var/log/`, or explicitly identified junk files. NEVER delete system configs).\n3. **Service Recovery:** `systemctl restart <service>` (If a service is down/stuck).\n\n### EXECUTION PROTOCOL\n1. Read the `recommended_action` from the Analyst.\n2. Verify safety (e.g., Am I deleting a critical file? Is this PID vital?).\n3. Execute the command via `linux_terminal`.\n4. Verify resolution (e.g., check if process is gone or disk space is reclaimed).\n\n### OUTPUT FORMAT (JSON)\n{\n  \"mitigation_status\": \"success/failed\",\n  \"action_log\": [\"Executed: rm /tmp/log_basura.img\", \"Verification: 12GB freed\"],\n  \"final_message\": \"Incident resolved. Disk space recovered.\"\n}\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1040,
+        80
+      ],
+      "id": "00ffc299-f3fc-4d7c-abee-1c1fce7d1a36",
+      "name": "Ejecutor"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f7179660-a777-440e-8c75-3f866c27b9e8",
+              "name": "documentacion",
+              "value": "={{ $('Analizador').item.json.output }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1392,
+        -80
+      ],
+      "id": "7b261014-c147-4bd3-b912-d5df0fcbef9e",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cb2c230c-6b32-4a44-a985-e023d3b76184",
+              "name": "documentacion",
+              "value": "={{ $json.output }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1392,
+        80
+      ],
+      "id": "2ff5d830-edd7-4323-a1bf-bdb79fef8e9a",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Genera el reporte final del incidente.\n\nFECHA DEL REPORTE: {{ $now.setLocale('es').toFormat('dd MMMM yyyy, HH:mm:ss') }} (Zona horaria del servidor)\n\nDATOS DEL INCIDENTE:\n{{ JSON.stringify($json.documentacion, null, 2) }}\n\nInstrucciones:\n- Usa la fecha proporcionada arriba en el encabezado del reporte.\n- No incluyas notas para el usuario como \"Asegúrate de...\".\n- Ve directo al contenido del reporte.\n"
+            },
+            {
+              "content": "=Eres un Technical Writer experto en reportes de incidentes SRE.\nTu tarea es convertir datos JSON crudos en un reporte legible para humanos.\n\nEstructura deseada del reporte:\n1. **Resumen Ejecutivo:** Qué pasó y qué se hizo.\n2. **Detalles Técnicos:** PIDs afectados, usuario, consumo de recursos.\n3. **Acciones Tomadas:** Lista de comandos ejecutados.\n4. **Estado Final:** Confirmación de resolución.\n\nUsa un tono formal y corporativo.\n",
+              "role": "model"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1616,
+        16
+      ],
+      "id": "7d0f6e3f-2e2b-43d0-a246-fac16e358355",
+      "name": "Message a model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "TaGKQ1vP2y6HITkO",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "instanceName": "=Miguel Maturana",
+        "remoteJid": "=(TELEFONO)s.whatsapp.net",
+        "messageText": "={{ $json.content.parts[1].text }}",
+        "options_message": {}
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        2032,
+        64
+      ],
+      "id": "ad02f96f-719e-4d2b-a610-163312723914",
+      "name": "Enviar texto",
+      "credentials": {
+        "evolutionApi": {
+          "id": "5yntQqZ5QVqETeHU",
+          "name": "Evolution account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "integrations-api",
+        "operation": "evolution-bot",
+        "instanceName": "=Miguel Maturana",
+        "resourceForEvolutionBot": "changeStatusEvolutionBot",
+        "evolutionBotId": "={{ $json.data.key.id }}",
+        "remoteJid": "=(TELEFONO)s.whatsapp.net",
+        "status": "closed"
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        2208,
+        64
+      ],
+      "id": "b363c947-833c-43c6-b3a4-0b0e05a7b04a",
+      "name": "Evolution bot",
+      "credentials": {
+        "evolutionApi": {
+          "id": "5yntQqZ5QVqETeHU",
+          "name": "Evolution account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Analizador",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        []
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Analizador",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Analizador",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "linux_terminal": {
+      "ai_tool": [
+        [
+          {
+            "node": "Analizador",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ejecutor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analizador": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Ejecutor",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Ejecutor",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "linux_terminal1": {
+      "ai_tool": [
+        [
+          {
+            "node": "Ejecutor",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ejecutor": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Enviar texto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar texto": {
+      "main": [
+        [
+          {
+            "node": "Evolution bot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c0c550501b7896ab0eff6edacfb19ee553f2da638e369fa0272020aa7d2ebf5a"
+  }
+}
