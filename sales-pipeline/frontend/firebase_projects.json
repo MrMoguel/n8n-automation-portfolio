@@ -1,0 +1,16 @@
+﻿{
+  "status": "success",
+  "result": [
+    {
+      "projectId": "edea-c52fd",
+      "projectNumber": "227798955992",
+      "displayName": "eDEA",
+      "name": "projects/edea-c52fd",
+      "resources": {
+        "hostingSite": "edea-c52fd"
+      },
+      "state": "ACTIVE",
+      "etag": "1_0020ec02-1217-442f-a06c-8cc59d1a5673"
+    }
+  ]
+}
