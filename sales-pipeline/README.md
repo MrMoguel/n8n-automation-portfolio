@@ -247,3 +247,8 @@ El sistema está diseñado para escalarse. Si quieres agregar Telegram o SMS:
 ---
 
 **Versión:** 1.0 | **Última actualización:** Enero 2026 | **Desarrollado por eDEA SpA**
+
+## Frontend Dashboard
+
+El repositorio incluye un dashboard React completo para visualizar y gestionar los leads. Para m�s detalles t�cnicos y de instalaci�n, consulta el [README del Frontend](./frontend/README.md).
+
